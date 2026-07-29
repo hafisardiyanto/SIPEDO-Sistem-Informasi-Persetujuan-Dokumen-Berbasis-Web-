@@ -22,8 +22,12 @@ return new class extends Migration {
             $table->string('email_pic')->nullable();
             $table->string('doc_type')->nullable();
             $table->text('additional_notes')->nullable();
-            $table->enum('status', ['draft', 'submitted', 'verifikasi_administrasi', 'in_review', 'approved', 'rejected', 'revision'])->default('draft')->index();
+            $table->enum('status', ['draft', 'submitted', 'verification', 'under_review', 'approved', 'rejected', 'revision', 'cancelled'])->default('draft')->index();
             $table->foreignUuid('reviewer_id')->nullable()->constrained('users')->nullOnDelete();
+
+            // SLA
+            $table->timestamp('target_review_date')->nullable();
+
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('reviewed_at')->nullable();
             $table->timestamp('approved_at')->nullable();
