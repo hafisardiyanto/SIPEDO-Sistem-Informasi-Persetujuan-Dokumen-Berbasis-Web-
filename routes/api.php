@@ -9,6 +9,7 @@ use App\Http\Controllers\AssessmentLogController;
 use App\Http\Controllers\DashboardController;
 
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\NotificationController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -24,11 +25,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // Aggregation Stats
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::get('/notifications/unread', [NotificationController::class, 'unreadCount']);
+
     // Pemohon APIs
     Route::get('/projects', [ProjectController::class, 'index']);
     Route::post('/projects', [ProjectController::class, 'store']);
     Route::get('/projects/{project}', [ProjectController::class, 'show']);
     Route::post('/projects/{project}', [ProjectController::class, 'update']);
+    Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
     Route::post('/projects/{project}/submit', [ProjectController::class, 'submit']);
     Route::get('/projects/{project}/history', [ProjectController::class, 'history']);
 

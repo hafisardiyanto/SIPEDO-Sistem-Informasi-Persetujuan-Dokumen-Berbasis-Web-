@@ -180,4 +180,30 @@ class ProjectController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         return response()->json(['data' => $project->assessmentLogs()->with('assessor')->latest()->get()]);
     }
+
+    public function destroy($id)
+    {
+        $project = Project::findOrFail($id);
+
+        // RBAC API Policy: Admin can delete anything, Pemohon can only delete their own drafts
+        $user = Auth::user();
+        if ($user->role !== 'admin') {
+            if ($project->user_id !== $user->id) {
+                return response()->json(['message' => 'Forbidden: You do not own this document'], 403);
+            }
+            if ($project->status !== 'draft') {
+                return response()->json(['message' => 'Cannot delete document that is already submitted'], 400);
+            }
+        }
+
+        $project->delete(); // This triggers SoftDelete because of our Phase 1 updates
+
+        // Let's log it safely with Spatie
+        try {
+            activity()->causedBy($user)->performedOn($project)->log('Project soft deleted');
+        } catch (\Exception $e) {
+        }
+
+        return response()->json(['message' => 'Project moved to trash successfully']);
+    }
 }
