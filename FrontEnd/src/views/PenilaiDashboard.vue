@@ -180,15 +180,15 @@ const downloadExcel = () => {
             </div>
             <div class="stat-card primary">
                 <span class="stat-title">Review Hari Ini</span>
-                <span class="stat-value">{{ stats.today || 0 }}</span>
+                <span class="stat-value">{{ stats.today !== undefined ? stats.today : 0 }}</span>
             </div>
             <div class="stat-card success">
                 <span class="stat-title">Average Review Time</span>
-                <span class="stat-value">2.4 Hari</span>
+                <span class="stat-value">{{ stats.average_review_time !== undefined ? stats.average_review_time : '0' }} Hari</span>
             </div>
             <div class="stat-card danger">
                 <span class="stat-title">Overdue SLA</span>
-                <span class="stat-value">{{ stats.overdue || 0 }} Kasus</span>
+                <span class="stat-value">{{ stats.overdue !== undefined ? stats.overdue : 0 }} Kasus</span>
             </div>
         </div>
 

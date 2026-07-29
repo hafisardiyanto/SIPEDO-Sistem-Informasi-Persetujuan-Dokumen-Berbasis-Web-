@@ -30,7 +30,30 @@ class DashboardController extends Controller
             DB::raw("COALESCE(sum(case when status = 'revision' then 1 else 0 end), 0) as revision"),
             DB::raw("COALESCE(sum(case when status = 'approved' then 1 else 0 end), 0) as approved"),
             DB::raw("COALESCE(sum(case when status = 'rejected' then 1 else 0 end), 0) as rejected")
-        )->first());
+        )->first())->toArray();
+
+        if ($role === 'penilai') {
+            // SLA and Review Average Times
+            $avgSec = DB::table('project_reviews')
+                ->where('reviewer_id', Auth::id())
+                ->join('projects', 'projects.id', '=', 'project_reviews.project_id')
+                ->select(DB::raw('AVG(EXTRACT(EPOCH FROM (project_reviews.created_at - projects.created_at))) as avg_sec'))
+                ->value('avg_sec');
+
+            $stats['average_review_time'] = $avgSec ? round($avgSec / 86400, 1) : 0;
+
+            $stats['overdue'] = DB::table('project_assignments')
+                ->where('assessor_id', Auth::id())
+                ->join('projects', 'projects.id', '=', 'project_assignments.project_id')
+                ->whereIn('projects.status', ['assigned', 'verification', 'in_review'])
+                ->where('project_assignments.created_at', '<', now()->subDays(3))
+                ->count();
+
+            $stats['today'] = DB::table('project_reviews')
+                ->where('reviewer_id', Auth::id())
+                ->whereDate('created_at', today())
+                ->count();
+        }
 
         return response()->json(['data' => $stats]);
     }
