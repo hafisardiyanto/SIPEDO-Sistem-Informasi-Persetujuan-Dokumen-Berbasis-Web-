@@ -46,13 +46,19 @@ onMounted(() => {
     <aside class="sidebar">
       <div class="brand">Control Panel</div>
       <nav class="nav-menu">
-        <a href="#" class="nav-link active">Dashboard</a>
+        <a href="#" class="nav-link active">Dashboard Utama</a>
         <a href="#" class="nav-link">Monitoring Permohonan</a>
-        <a href="#" class="nav-link">Master User</a>
-        <a href="#" class="nav-link">Master Dokumen</a>
-        <a href="#" class="nav-link">Master Company</a>
-        <a href="#" class="nav-link">Activity Log</a>
-        <a href="#" class="nav-link">Approval Log</a>
+        <a href="#" class="nav-link">Master Profile & User</a>
+        <div style="padding-left:1rem; display:flex; flex-direction:column; gap:0.2rem">
+            <a href="#" class="nav-link" style="font-size:0.8rem">➕ Tambah User</a>
+            <a href="#" class="nav-link" style="font-size:0.8rem">🔑 Aktifkan / Nonaktifkan Akun</a>
+        </div>
+        <a href="#" class="nav-link">Master Jenis Dokumen</a>
+        <div style="padding-left:1rem; display:flex; flex-direction:column; gap:0.2rem">
+            <a href="#" class="nav-link" style="font-size:0.8rem">📝 Tambah / Edit Dokumen</a>
+        </div>
+        <a href="#" class="nav-link">Lihat Assignment History</a>
+        <a href="#" class="nav-link">Log Status Histori</a>
       </nav>
       <div class="sidebar-footer">
         <button @click="handleLogout" class="btn-logout">Logout</button>

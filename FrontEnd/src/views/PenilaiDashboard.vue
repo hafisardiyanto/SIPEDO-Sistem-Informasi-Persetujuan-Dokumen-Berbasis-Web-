@@ -277,15 +277,20 @@ const downloadExcel = () => {
                 <h3 style="font-size:1rem; margin-top:1.5rem; margin-bottom:0.5rem">Preview Inline Berkas Dokumen</h3>
                 <div v-if="selectedProject.documents && selectedProject.documents.length > 0" style="display:flex; flex-direction:column; gap:10px;">
                     <div v-for="doc in selectedProject.documents" :key="doc.id" style="border: 1px solid #cbd5e1; border-radius:8px; overflow:hidden">
-                        <div style="background:#f1f5f9; padding: 0.5rem; font-weight:bold; font-size: 0.85rem; border-bottom:1px solid #cbd5e1">
-                            {{ doc.category.toUpperCase() }} - {{ doc.file_name }}
+                        <div style="background:#f1f5f9; padding: 0.5rem; font-weight:bold; font-size: 0.85rem; border-bottom:1px solid #cbd5e1; display:flex; justify-content:space-between">
+                            <span>{{ doc.category.toUpperCase() }} - {{ doc.file_name }}</span>
+                            <div style="display:flex; gap:0.5rem">
+                                <a :href="'http://localhost:8000/storage/' + doc.file_path" target="_blank" style="color:#7c3aed; text-decoration:none">👁️ Preview</a>
+                                <a :href="'http://localhost:8000/storage/' + doc.file_path" download style="color:#10b981; text-decoration:none">📥 Unduh</a>
+                                <span style="cursor:pointer; color:#f59e0b" @click="alert('Membuka v1, v2, v3...')">📜 Lihat Riwayat Versi</span>
+                            </div>
                         </div>
                         <iframe :src="'http://localhost:8000/storage/' + doc.file_path" 
                                 style="width:100%; height:300px; border:none;" 
                                 v-if="doc.file_path.endsWith('.pdf')">
                         </iframe>
                         <div v-else style="padding:1rem; text-align:center; font-size:0.85rem">
-                            File bukan PDF. <a :href="'http://localhost:8000/storage/' + doc.file_path" target="_blank">Unduh & Buka</a>
+                            File tidak mendukung auto-preview. Silakan gunakan tombol Unduh di atas.
                         </div>
                     </div>
                 </div>

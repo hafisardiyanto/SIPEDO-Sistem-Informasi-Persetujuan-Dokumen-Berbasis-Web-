@@ -65,6 +65,15 @@ const deleteProject = async (projId) => {
     } catch (err) { alert('Gagal menghapus dokumen.') }
 }
 
+const cancelProject = async (projId) => {
+    if(!confirm('Apakah Anda yakin ingin membatalkan permohonan ini? Setelah dibatalkan, dokumen akan kembali ke status Draft sehingga dapat diperbaiki atau diajukan kembali.')) return;
+    try {
+        await axios.post(`/api/projects/${projId}/cancel`)
+        fetchStats()
+        fetchProjects()
+    } catch (err) { alert('Gagal membatalkan. Status mungkin sudah masuk proses evaluasi Assigned.') }
+}
+
 const formData = ref({
     title: '', description: '', company_name: '', pic_name: '', phone: '', email_pic: '', doc_type: '', additional_notes: ''
 })
@@ -273,10 +282,11 @@ const generatePages = () => {
                 <td class="actions">
                     <button v-if="viewingTrash" @click="restoreProject(proj.id)" class="btn-icon btn-view" style="color:#10b981">♻️ Pulihkan</button>
                     <template v-else>
-                        <button v-if="proj.status === 'draft'" @click="deleteProject(proj.id)" class="btn-icon btn-edit" style="color:#ef4444; margin-right:5px">🗑️ Buang</button>
-                        <button v-if="proj.status === 'draft'" @click="openEditModal(proj)" class="btn-icon btn-edit">Edit Permohonan</button>
-                        <button v-if="proj.status === 'revision'" @click="openEditModal(proj)" class="btn-icon btn-edit">Perbaiki Dokumen</button>
-                        <button @click="viewDetails(proj)" class="btn-icon btn-view">Detail Permohonan</button>
+                        <button v-if="proj.status === 'draft'" @click="deleteProject(proj.id)" class="btn-icon btn-edit" style="color:#ef4444; margin-right:5px">🗑️ Hapus Draft</button>
+                        <button v-if="proj.status === 'draft'" @click="openEditModal(proj)" class="btn-icon btn-edit">Edit</button>
+                        <button v-if="proj.status === 'submitted'" @click="cancelProject(proj.id)" class="btn-icon btn-edit" style="color:#f59e0b; margin-right:5px">🚫 Batalkan Permohonan</button>
+                        <button v-if="proj.status === 'revision'" @click="openEditModal(proj)" class="btn-icon btn-edit">📥 Unggah Versi Baru</button>
+                        <button @click="viewDetails(proj)" class="btn-icon btn-view">👀 Lihat Detail</button>
                     </template>
                 </td>
                 </tr>
