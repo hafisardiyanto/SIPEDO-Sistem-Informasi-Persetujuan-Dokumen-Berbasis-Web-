@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->string('email_pic')->nullable();
             $table->string('doc_type')->nullable();
             $table->text('additional_notes')->nullable();
-            $table->enum('status', ['draft', 'submitted', 'verification', 'under_review', 'approved', 'rejected', 'revision', 'cancelled'])->default('draft')->index();
+            $table->enum('status', ['draft', 'submitted', 'assigned', 'verification', 'under_review', 'approved', 'rejected', 'revision', 'cancelled'])->default('draft')->index();
             $table->foreignUuid('reviewer_id')->nullable()->constrained('users')->nullOnDelete();
 
             // SLA
