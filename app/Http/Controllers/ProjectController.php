@@ -46,6 +46,21 @@ class ProjectController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        $messages = [
+            'title.required' => 'Judul / Nama Proyek Dokumen wajib diisi.',
+            'title.max' => 'Judul maksimal 255 karakter.',
+            'description.required' => 'Kolom deskripsi tujuan wajib diisi.',
+            'document_utama.mimes' => 'Dokumen Utama harus berformat PDF, DOC, atau DOCX.',
+            'document_utama.max' => 'Ukuran Dokumen Utama maksimal 20MB.',
+            'document_lampiran.mimes' => 'Lampiran harus berformat PDF, DOC, DOCX, ZIP, atau RAR.',
+            'document_lampiran.max' => 'Ukuran Dokumen Lampiran maksimal 20MB.',
+            'document_pengantar.mimes' => 'Surat pengantar harus berformat PDF atau DOCX.',
+            'document_pengantar.max' => 'Ukuran Surat Pengantar maksimal 20MB.',
+            'document_pendukung.mimes' => 'Bukti pendukung harus berformat PDF, DOCX, JPG, atau PNG.',
+            'document_pendukung.max' => 'Ukuran Bukti Pendukung maksimal 20MB.',
+            'email_pic.email' => 'Format email penanggung jawab tidak valid.'
+        ];
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -59,7 +74,7 @@ class ProjectController extends Controller
             'document_lampiran' => 'nullable|file|mimes:pdf,doc,docx,zip,rar|max:20480',
             'document_pengantar' => 'nullable|file|mimes:pdf,doc,docx|max:20480',
             'document_pendukung' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:20480',
-        ]);
+        ], $messages);
 
         DB::beginTransaction();
         try {
@@ -115,6 +130,21 @@ class ProjectController extends Controller
             return response()->json(['message' => 'Forbidden or not in draft'], 403);
         }
 
+        $messages = [
+            'title.required' => 'Judul / Nama Proyek Dokumen wajib diisi.',
+            'title.max' => 'Judul maksimal 255 karakter.',
+            'description.required' => 'Kolom deskripsi tujuan wajib diisi.',
+            'document_utama.mimes' => 'Dokumen Utama harus berformat PDF, DOC, atau DOCX.',
+            'document_utama.max' => 'Ukuran Dokumen Utama maksimal 20MB.',
+            'document_lampiran.mimes' => 'Lampiran harus berformat PDF, DOC, DOCX, ZIP, atau RAR.',
+            'document_lampiran.max' => 'Ukuran Dokumen Lampiran maksimal 20MB.',
+            'document_pengantar.mimes' => 'Surat pengantar harus berformat PDF atau DOCX.',
+            'document_pengantar.max' => 'Ukuran Surat Pengantar maksimal 20MB.',
+            'document_pendukung.mimes' => 'Bukti pendukung harus berformat PDF, DOCX, JPG, atau PNG.',
+            'document_pendukung.max' => 'Ukuran Bukti Pendukung maksimal 20MB.',
+            'email_pic.email' => 'Format email penanggung jawab tidak valid.'
+        ];
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -128,7 +158,7 @@ class ProjectController extends Controller
             'document_lampiran' => 'nullable|file|mimes:pdf,doc,docx,zip,rar|max:20480',
             'document_pengantar' => 'nullable|file|mimes:pdf,doc,docx|max:20480',
             'document_pendukung' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:20480',
-        ]);
+        ], $messages);
 
         DB::beginTransaction();
         try {
