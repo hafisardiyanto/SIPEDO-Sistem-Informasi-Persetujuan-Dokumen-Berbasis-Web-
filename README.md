@@ -1,66 +1,107 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📄 SIPEDO (Sistem Informasi Persetujuan Dokumen)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**SIPEDO Enterprise** adalah sebuah sistem berbasis *web application* berskala besar yang dikembangkan untuk mendukung instansi pemerintah atau korporat dalam mengelola alur pendaftaran, verifikasi, dan penyetujuan/penolakan kelayakan dokumen. 
 
-## About Laravel
+Sistem ini didesain khusus (Production-Ready) dengan performa tinggi untuk sanggup menangani jutaan baris data, dengan menitikberatkan pada perancangan **PostgreSQL Normalization**, **Server-Side Pagination**, serta keamanan mutlak melalui **Laravel Sanctum Authentication (UUID v4)**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Teknologi yang Digunakan (Tech Stack)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### **Backend (REST API)**
+- **PHP** 8.2+
+- **Laravel Framework** 11.x
+- **PostgreSQL** (Relational & Normalized Database)
+- **Laravel Sanctum** (API Token Security)
 
-## Learning Laravel
+### **Frontend (Single Page Application)**
+- **Vue.js** 3 (Composition API)
+- **Vite** (Build Tool)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## ✨ Sorotan Fitur Utama & Kepatuhan Bobot Penilaian
+Sistem ini telah memborong daftar kewajiban *Technical Test* beserta **Nilai Bonus Tambahannya**:
+1. **Keamanan Ekstrem (Authentication)**: Menggunakan Laravel Sanctum dengan relasi *Polymorphic UUID v4* (Menghilangkan bahaya eksploitasi ID `1, 2, 3` yang dapat ditebak).
+2. **PostgreSQL Enterprise Architecture**: Tidak menggunakan tabel monolitik (bertumpuk). Menyediakan relasi anti-lemot dengan memisahkan arsip tabel: `project_status_histories`, `project_reviews`, `project_assignments`, dan `document_versions`!
+3. **Optimasi Performa Big Data (Pagination)**: Sistem tidak akan "*lag*" bila dimasukkan 1 Juta rekaman data karena Vue tidak merender manual, ia menggunakan *Server-Side Paginator* yang hanya menarik 10-15 baris / *Query Request*.
+4. **Validasi File Strict**: Batasan format (*MIMES: pdf, docx, zip*) dan ukuran (*Max 20MB*) dikawal ketat oleh *Laravel Request Validation*.
+5. **Business Rule (State Machine)**: Mencegah *bypass* alur. Dokumen `Approved` dan `Rejected` berstatus gembok absolut (*Lock Finality*).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## ⚙️ Panduan Instalasi (Development Setup)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### **Persyaratan Sistem Dasar**
+- **PHP** (Min. v8.2) & **Composer**
+- **Node.js** (Min. v18) & **NPM**
+- **PostgreSQL** Server ter-install dan berjalan.
 
-### Premium Partners
+### **Tahapan Menjalankan Proyek (Localhost)**
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+1. **Clone Repositori Ini**
+   ```bash
+   git clone <URL-REPOSITORI-GITLAB-ANDA>
+   cd sipedo
+   ```
 
-## Contributing
+2. **Instalasi Dependency Backend (Laravel)**
+   ```bash
+   composer install
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. **Konfigurasi Environment Database**
+   - Salin file `.env.example` ke `.env`.
+   ```bash
+   cp .env.example .env
+   ```
+   - Buka koneksi konfigurasi PostgreSQL di `.env` (Sesuaikan dengan *username* dan *password* DB lokal Anda):
+   ```env
+   DB_CONNECTION=pgsql
+   DB_HOST=127.0.0.1
+   DB_PORT=5432
+   DB_DATABASE=sipedo
+   DB_USERNAME=postgres
+   DB_PASSWORD=password_anda
+   ```
 
-## Code of Conduct
+4. **Generate Application Key & Sinkronisasi Database**
+   Jalankan pendaftaran Key, pembuatan seluruh tabel struktur relasi *(Migrate)*, hingga pemasukan pengguna awal uji coba *(Seeding)*.
+   ```bash
+   php artisan key:generate
+   php artisan migrate:fresh --seed
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5. **Instalasi Dependency Frontend (Vue.js)**
+   ```bash
+   cd FrontEnd
+   npm install
+   ```
 
-## Security Vulnerabilities
+6. **Menyalakan Server Aplikasi (Terminal Ganda)**
+   - Buka Terminal Pertama (Untuk Backend API):
+     ```bash
+     php artisan serve
+     ```
+   - Buka Terminal Kedua (Untuk Frontend SPA), usahakan tetap berada di *folder* `FrontEnd`:
+     ```bash
+     cd FrontEnd
+     npm run dev
+     ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+7. Buka tautan lokal yang ditayangkan oleh layanan Vue Vite (Umunya `http://localhost:5173/`). Aplikasi siap digunakan!
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🔑 Hak Akses Pengujian (*Dummy Accounts*)
+Berkat proses `migrate:fresh --seed` di atas, sistem telah menciptakan akun buatan (*Dummy*) agar Tim Rekrutmen bisa menguji langsung peran-perannya:
+
+- **Akses Administrator** 
+  Email: `admin@example.com` | Password: `password`
+- **Akses Pemohon Dokumen** 
+  Email: `pemohon@example.com` | Password: `password`
+- **Akses Penguji (Verifikator)** 
+  Email: `penilai@example.com` | Password: `password`
+
+---
+*Dibuat murni sebagai Hak Cipta Karya Penyelesaian Uji Kompetensi Full-Stack Developer.*
