@@ -35,6 +35,17 @@ const toggleTrash = () => {
     fetchProjects(1)
 }
 
+const logout = async () => {
+    try { 
+        await axios.post('/api/logout', {}, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }) 
+    } catch (e) {}
+    localStorage.removeItem('user')
+    localStorage.removeItem('token')
+    router.push('/')
+}
+
 const fetchProjects = async (page = 1) => {
     loading.value = true
     try {
