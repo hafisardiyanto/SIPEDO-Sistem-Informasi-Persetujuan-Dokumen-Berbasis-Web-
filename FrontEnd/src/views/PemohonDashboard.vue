@@ -359,7 +359,7 @@ const generatePages = () => {
                         Simpan Draft
                     </button>
                     <button type="button" @click="submitForm('submit')" :disabled="formUploading" class="btn-primary" style="background: linear-gradient(135deg, #10b981, #059669)">
-                        {{ formUploading ? 'Memproses...' : 'Kirim Permohonan' }}
+                        {{ formUploading ? 'Memproses...' : 'Ajukan Permohonan' }}
                     </button>
                 </div>
             </form>
