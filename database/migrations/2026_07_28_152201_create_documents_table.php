@@ -11,13 +11,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('documents', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('project_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('project_id')->constrained()->onDelete('cascade');
             $table->string('file_name');
             $table->string('file_path');
             $table->string('file_type')->nullable();
             $table->enum('category', ['utama', 'lampiran', 'pengantar', 'pendukung'])->default('utama');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

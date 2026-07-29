@@ -11,8 +11,8 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('projects', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('project_number')->unique()->nullable();
@@ -23,13 +23,14 @@ return new class extends Migration {
             $table->string('doc_type')->nullable();
             $table->text('additional_notes')->nullable();
             $table->enum('status', ['draft', 'submitted', 'verifikasi_administrasi', 'in_review', 'approved', 'rejected', 'revision'])->default('draft')->index();
-            $table->foreignId('reviewer_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('reviewer_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('reviewed_at')->nullable();
             $table->timestamp('approved_at')->nullable();
             $table->timestamp('rejected_at')->nullable();
             $table->integer('revision_count')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
