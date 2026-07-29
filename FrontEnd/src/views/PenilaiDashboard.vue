@@ -58,8 +58,26 @@ const fetchAssessments = async (page = 1) => {
     }
 }
 
+const notifications = computed(() => {
+    let notifs = [];
+    if (!paginatedData.value.data) return notifs;
+    
+    paginatedData.value.data.forEach(proj => {
+        if (proj.status === 'submitted') {
+            notifs.push({ id: proj.id + 'a', type: 'info', title: 'Assignment Baru Masuk', desc: `Dokumen ${proj.project_number} dari ${proj.company_name} menunggu antrean review.`, time: proj.created_at });
+        }
+        if (proj.status === 'revision') {
+            notifs.push({ id: proj.id + 'b', type: 'warning', title: 'Revisi Dikirim Balik', desc: `Pemohon ${proj.company_name} telah mengirim balik revisian.`, time: proj.updated_at });
+        }
+        if (proj.ui_sla && proj.ui_sla.includes('Overdue')) {
+            notifs.push({ id: proj.id + 'c', type: 'danger', title: 'SLA Darurat (Overdue)', desc: `Tugas review ${proj.project_number} telah melampaui batas waktu! Segera ambil tindakan.`, time: new Date().toISOString() });
+        }
+    })
+    return notifs.sort((a,b) => new Date(b.time) - new Date(a.time));
+});
+
 watch([searchQ, filterStatus, activeTab], () => {
-    if (activeTab.value === 'assignments' || activeTab.value === 'history') {
+    if (['assignments', 'history', 'notifications'].includes(activeTab.value)) {
         fetchAssessments(1)
     }
 })
@@ -183,7 +201,7 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
         <a href="#" :class="['menu-item', activeTab === 'reports' ? 'active' : '']" @click.prevent="activeTab = 'reports'">📑 Export Laporan</a>
         <a href="#" :class="['menu-item', activeTab === 'notifications' ? 'active' : '']" @click.prevent="activeTab = 'notifications'">
             🔔 Notifikasi 
-            <span style="background:#ef4444; color:white; border-radius:50%; padding:2px 6px; font-size:0.7rem; margin-left:auto">3</span>
+            <span v-if="notifications.length > 0" style="background:#ef4444; color:white; border-radius:50%; padding:2px 8px; font-size:0.75rem; margin-left:auto; font-weight:bold">{{ notifications.length }}</span>
         </a>
         <a href="#" :class="['menu-item', activeTab === 'profile' ? 'active' : '']" @click.prevent="activeTab = 'profile'">👤 Profil Setting</a>
       </nav>
@@ -349,6 +367,50 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
                     <button @click="downloadPDF" class="btn-view" style="background:#dc2626; color:white; padding:1rem 2rem; border:none; cursor:pointer; font-weight:bold; border-radius:8px">🖨️ Cetak Laporan PDF</button>
                 </div>
             </div>
+        </div>
+
+        <!-- TAB: NOTIFICATIONS -->
+        <div v-if="activeTab === 'notifications'">
+            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <h2>Alert & Pemberitahuan Real-Time</h2>
+                <div v-if="notifications.length > 0" style="display:flex; flex-direction:column; gap:1rem; margin-top:1.5rem">
+                    <div v-for="notif in notifications" :key="notif.id" class="notif-card" :style="{ padding: '1.2rem', borderRadius: '12px', borderLeft: '6px solid ' + (notif.type==='danger'?'#ef4444':notif.type==='warning'?'#f59e0b':'#3b82f6'), background: '#f8fafc', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }">
+                        <strong style="display:block; margin-bottom:0.25rem; font-size:1.05rem; color:#1e293b">{{ notif.title }}</strong>
+                        <span style="color:#475569; font-size:0.95rem">{{ notif.desc }}</span>
+                        <div style="margin-top:0.75rem; font-size:0.8rem; color:#94a3b8; font-weight:500">🕐 {{ new Date(notif.time).toLocaleString('id-ID') }}</div>
+                    </div>
+                </div>
+                <div v-else style="padding:4rem; text-align:center; color:#94a3b8">Bagus! Tidak ada notifikasi tertunggak.</div>
+            </div>
+        </div>
+        
+        <!-- TAB: PROFILE -->
+        <div v-if="activeTab === 'profile'">
+             <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display:flex; justify-content:center">
+                <div style="display:flex; flex-direction:column; gap:1.2rem; width:100%; max-width:500px">
+                    <div style="text-align:center; margin-bottom:1rem">
+                         <div style="width:120px; height:120px; background:linear-gradient(135deg, #7c3aed, #4f46e5); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:3.5rem; margin:0 auto; box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.3);">
+                             {{ user.name?.charAt(0) }}
+                         </div>
+                         <h2 style="margin-top:1.5rem; color:#1e293b; margin-bottom:0.2rem">{{ user.name }}</h2>
+                         <p style="color:#64748b; margin:0">Verifikator Enterprise Level</p>
+                    </div>
+                    
+                    <div>
+                        <label style="display:block; margin-bottom:0.5rem; color:#475569; font-weight:600">Nama Lengkap</label>
+                        <input type="text" :value="user.name" readonly style="width:100%; background:#f1f5f9; border:none; padding:1rem; border-radius:8px; font-family:inherit; color:#1e293b; font-size:1rem; box-sizing:border-box">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:0.5rem; color:#475569; font-weight:600">Alamat Email Kontak</label>
+                        <input type="email" :value="user.email" readonly style="width:100%; background:#f1f5f9; border:none; padding:1rem; border-radius:8px; font-family:inherit; color:#1e293b; font-size:1rem; box-sizing:border-box">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:0.5rem; color:#475569; font-weight:600">Ubah Password Autentikasi</label>
+                        <input type="password" placeholder="Ketik sandi baru..." style="width:100%; border:1px solid #cbd5e1; padding:1rem; border-radius:8px; font-family:inherit; font-size:1rem; box-sizing:border-box">
+                    </div>
+                    <button style="background:#7c3aed; color:white; padding:1rem; border-radius:8px; margin-top:1rem; border:none; cursor:pointer; font-weight:bold; font-size:1rem" @click="alert('✅ Pembaharuan Identitas & Kata Sandi Diamankan!')">Simpan Pembaruan Profil</button>
+                </div>
+             </div>
         </div>
 
       </div>
