@@ -22,10 +22,24 @@ const fetchStats = async () => {
     } catch(err) {}
 }
 
+const showFormModal = ref(false)
+const showDetailModal = ref(false)
+const selectedProject = ref(null)
+const isEdit = ref(false)
+const formError = ref('')
+const formUploading = ref(false)
+
+const viewingTrash = ref(false)
+const toggleTrash = () => {
+    viewingTrash.value = !viewingTrash.value
+    fetchProjects(1)
+}
+
 const fetchProjects = async (page = 1) => {
     loading.value = true
     try {
-        const res = await axios.get(`/api/projects?page=${page}&search=${searchQ.value}&status=${filterStatus.value}`)
+        const endpoint = viewingTrash.value ? '/api/projects/trash/view' : '/api/projects'
+        const res = await axios.get(`${endpoint}?page=${page}&search=${searchQ.value}&status=${filterStatus.value}`)
         paginatedData.value = res.data
     } catch (err) {
         if(err.response?.status === 401) logout()
@@ -34,33 +48,22 @@ const fetchProjects = async (page = 1) => {
     }
 }
 
-watch([searchQ, filterStatus], () => {
-    fetchProjects(1)
-})
-
-onMounted(() => {
-    if(!user.value || user.value.role !== 'pemohon') {
-        router.push('/')
-        return
-    }
-    fetchStats()
-    fetchProjects()
-})
-
-const logout = async () => {
-    try { await axios.post('/api/logout') } catch (e) {}
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    router.push('/')
+const restoreProject = async (projId) => {
+    try {
+        await axios.post(`/api/projects/${projId}/restore`)
+        fetchStats()
+        fetchProjects()
+    } catch (err) { alert('Gagal memulihkan dokumen.') }
 }
 
-// Form logic
-const showFormModal = ref(false)
-const showDetailModal = ref(false)
-const selectedProject = ref(null)
-const isEdit = ref(false)
-const formError = ref('')
-const formUploading = ref(false)
+const deleteProject = async (projId) => {
+    if(!confirm('Kirim ke Recycle Bin?')) return;
+    try {
+        await axios.delete(`/api/projects/${projId}`)
+        fetchStats()
+        fetchProjects()
+    } catch (err) { alert('Gagal menghapus dokumen.') }
+}
 
 const formData = ref({
     title: '', description: '', company_name: '', pic_name: '', phone: '', email_pic: '', doc_type: '', additional_notes: ''
@@ -191,8 +194,13 @@ const generatePages = () => {
     <!-- Main Content -->
     <main class="main-content">
       <header class="header">
-        <h1>Dashboard Statistik & Data</h1>
-        <button @click="openCreateModal" class="btn-primary">+ Buat Permohonan</button>
+        <h1>Dashboard Statistik & Data {{ viewingTrash ? '(Trash Mode)' : '' }}</h1>
+        <div>
+            <button @click="toggleTrash" class="btn-secondary" style="margin-right: 1rem;">
+                {{ viewingTrash ? '🔙 Kembali ke Dashboard' : '🗑️ Recycle Bin' }}
+            </button>
+            <button v-if="!viewingTrash" @click="openCreateModal" class="btn-primary">+ Buat Permohonan</button>
+        </div>
       </header>
       
       <div class="content-wrapper">
@@ -263,9 +271,13 @@ const generatePages = () => {
                 </td>
                 <td class="text-sm">{{ new Date(proj.created_at).toLocaleDateString('id-ID') }}</td>
                 <td class="actions">
-                    <button v-if="proj.status === 'draft'" @click="openEditModal(proj)" class="btn-icon btn-edit">Edit Permohonan</button>
-                    <button v-if="proj.status === 'revision'" @click="openEditModal(proj)" class="btn-icon btn-edit">Perbaiki Dokumen</button>
-                    <button @click="viewDetails(proj)" class="btn-icon btn-view">Detail Permohonan</button>
+                    <button v-if="viewingTrash" @click="restoreProject(proj.id)" class="btn-icon btn-view" style="color:#10b981">♻️ Pulihkan</button>
+                    <template v-else>
+                        <button v-if="proj.status === 'draft'" @click="deleteProject(proj.id)" class="btn-icon btn-edit" style="color:#ef4444; margin-right:5px">🗑️ Buang</button>
+                        <button v-if="proj.status === 'draft'" @click="openEditModal(proj)" class="btn-icon btn-edit">Edit Permohonan</button>
+                        <button v-if="proj.status === 'revision'" @click="openEditModal(proj)" class="btn-icon btn-edit">Perbaiki Dokumen</button>
+                        <button @click="viewDetails(proj)" class="btn-icon btn-view">Detail Permohonan</button>
+                    </template>
                 </td>
                 </tr>
             </tbody>
@@ -323,16 +335,16 @@ const generatePages = () => {
                         <label>Nomor Telepon</label>
                         <input type="text" v-model="formData.phone">
                     </div>
-                    <div class="form-group">
-                        <label>Unggah Dokumen Utama (Max 20MB)</label>
+                    <div class="form-group" style="border: 2px dashed #cbd5e1; padding: 1.5rem; text-align: center; border-radius: 8px;">
+                        <label>Unggah Dokumen Utama (Max 20MB)</label><br/>
                         <input type="file" @change="e => handleFile(e, 'document_utama')" accept=".pdf,.docx">
                     </div>
-                    <div class="form-group">
-                        <label>Unggah Dokumen Lampiran (Max 20MB)</label>
+                    <div class="form-group" style="border: 2px dashed #cbd5e1; padding: 1.5rem; text-align: center; border-radius: 8px;">
+                        <label>Unggah Dokumen Lampiran (Max 20MB)</label><br/>
                         <input type="file" @change="e => handleFile(e, 'document_lampiran')" accept=".zip,.rar,.pdf">
                     </div>
-                    <div class="form-group">
-                        <label>Unggah Surat Pengantar (Max 20MB)</label>
+                    <div class="form-group" style="border: 2px dashed #cbd5e1; padding: 1.5rem; text-align: center; border-radius: 8px;">
+                        <label>Unggah Surat Pengantar (Max 20MB)</label><br/>
                         <input type="file" @change="e => handleFile(e, 'document_pengantar')" accept=".pdf,.doc">
                     </div>
                     <div class="form-group form-group-full">

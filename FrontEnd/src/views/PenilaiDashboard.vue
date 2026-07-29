@@ -56,9 +56,11 @@ const logout = async () => {
 
 // Evaluation modal state
 const showEvalModal = ref(false)
-const selectedProject = ref(null)
 const evalFormError = ref('')
 const evalUploading = ref(false)
+
+const showConfirmModal = ref(false)
+const confirmAction = ref('')
 
 const evalData = ref({
     status: '',
@@ -80,11 +82,13 @@ const confirmAndSubmit = (status) => {
         evalFormError.value = 'Wajib mengisi Catatan Penilai jika menolak atau meminta revisi.'
         return;
     }
-    if (status === 'approved') {
-        if(!confirm('Apakah Anda yakin menyetujui dokumen ini?')) {
-            return;
-        }
-    }
+    
+    confirmAction.value = status;
+    showConfirmModal.value = true;
+}
+
+const executeEvaluation = () => {
+    showConfirmModal.value = false;
     submitEvaluation();
 }
 
@@ -303,5 +307,22 @@ const downloadExcel = () => {
             </div>
         </div>
     </div>
+
+    <!-- CUSTOM CONFIRM DIALOG ENTERPRISE -->
+    <div v-if="showConfirmModal" class="modal-overlay" style="z-index:999">
+        <div class="modal-content" style="max-width:400px; text-align:center; padding: 2rem">
+            <div style="font-size: 3rem; margin-bottom:1rem">⚠️</div>
+            <h3 style="margin-bottom:1rem; color:#1e293b">Konfirmasi Tindakan</h3>
+            <p style="color:#64748b; margin-bottom: 2rem">
+                Apakah Anda yakin ingin menjatuhkan putusan 
+                <strong style="text-transform:uppercase; color:#7c3aed">{{ confirmAction }}</strong> pada dokumen ini?
+            </p>
+            <div style="display:flex; justify-content:center; gap:1rem">
+                <button @click="showConfirmModal = false" style="padding:0.75rem 1.5rem; border:1px solid #cbd5e1; border-radius:6px; background:white; cursor:pointer">Batal</button>
+                <button @click="executeEvaluation" style="padding:0.75rem 1.5rem; border:none; border-radius:6px; background:#7c3aed; color:white; font-weight:bold; cursor:pointer">Ya, Eksekusi!</button>
+            </div>
+        </div>
+    </div>
+
   </div>
 </template>

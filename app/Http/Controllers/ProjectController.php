@@ -206,4 +206,23 @@ class ProjectController extends Controller
 
         return response()->json(['message' => 'Project moved to trash successfully']);
     }
+
+    public function trash()
+    {
+        $projects = \App\Models\Project::where('user_id', \Illuminate\Support\Facades\Auth::id())->onlyTrashed()->paginate(10);
+        return response()->json($projects);
+    }
+
+    public function restore($id)
+    {
+        $project = \App\Models\Project::onlyTrashed()->where('user_id', \Illuminate\Support\Facades\Auth::id())->findOrFail($id);
+        $project->restore();
+
+        try {
+            activity()->causedBy(\Illuminate\Support\Facades\Auth::user())->performedOn($project)->log('Project restored from trash');
+        } catch (\Exception $e) {
+        }
+
+        return response()->json(['message' => 'Project restored successfully']);
+    }
 }

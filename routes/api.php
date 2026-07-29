@@ -32,6 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Pemohon APIs
     Route::get('/projects', [ProjectController::class, 'index']);
+    Route::get('/projects/trash/view', [ProjectController::class, 'trash']);
+    Route::post('/projects/{project}/restore', [ProjectController::class, 'restore']);
     Route::post('/projects', [ProjectController::class, 'store']);
     Route::get('/projects/{project}', [ProjectController::class, 'show']);
     Route::post('/projects/{project}', [ProjectController::class, 'update']);
