@@ -27,6 +27,8 @@ const handleLogin = async () => {
       router.push('/pemohon/dashboard')
     } else if(user.role === 'penilai') {
       router.push('/penilai/dashboard')
+    } else if(user.role === 'admin') {
+      router.push('/admin/dashboard')
     } else {
       router.push('/')
     }
