@@ -214,30 +214,25 @@ const generatePages = () => {
       
       <div class="content-wrapper">
         
-        <!-- Stats Widgets -->
         <div class="stats-grid">
-            <div class="stat-card primary">
-                <span class="stat-title">Total Antrean</span>
-                <span class="stat-value">{{ stats.total }}</span>
-            </div>
             <div class="stat-card">
-                <span class="stat-title">Draft Tersimpan</span>
+                <span class="stat-title">Total Draft</span>
                 <span class="stat-value">{{ stats.draft }}</span>
             </div>
             <div class="stat-card primary">
-                <span class="stat-title">Menunggu Penilaian</span>
-                <span class="stat-value">{{ stats.submitted + stats.in_review }}</span>
+                <span class="stat-title">Total Submitted</span>
+                <span class="stat-value">{{ stats.submitted }}</span>
             </div>
             <div class="stat-card warning">
-                <span class="stat-title">Perlu Direvisi</span>
+                <span class="stat-title">Total Revision</span>
                 <span class="stat-value">{{ stats.revision }}</span>
             </div>
             <div class="stat-card success">
-                <span class="stat-title">Dokumen Disetujui</span>
+                <span class="stat-title">Total Approved</span>
                 <span class="stat-value">{{ stats.approved }}</span>
             </div>
             <div class="stat-card danger">
-                <span class="stat-title">Ditolak</span>
+                <span class="stat-title">Total Rejected</span>
                 <span class="stat-value">{{ stats.rejected }}</span>
             </div>
         </div>

@@ -170,25 +170,21 @@ const downloadExcel = () => {
 
         <!-- Stats Widgets -->
         <div class="stats-grid">
-            <div class="stat-card primary">
-                <span class="stat-title">Total Audit Data</span>
-                <span class="stat-value">{{ stats.total }}</span>
-            </div>
-            <div class="stat-card primary">
-                <span class="stat-title">Masuk (Unprocessed)</span>
-                <span class="stat-value">{{ stats.submitted }}</span>
-            </div>
             <div class="stat-card warning">
-                <span class="stat-title">Sedang Direview</span>
-                <span class="stat-value">{{ stats.in_review }}</span>
+                <span class="stat-title">Pending Review</span>
+                <span class="stat-value">{{ stats.in_review || 0 }}</span>
+            </div>
+            <div class="stat-card primary">
+                <span class="stat-title">Review Hari Ini</span>
+                <span class="stat-value">{{ stats.today || 0 }}</span>
             </div>
             <div class="stat-card success">
-                <span class="stat-title">Lolos Verifikasi</span>
-                <span class="stat-value">{{ stats.approved }}</span>
+                <span class="stat-title">Average Review Time</span>
+                <span class="stat-value">2.4 Hari</span>
             </div>
             <div class="stat-card danger">
-                <span class="stat-title">Permohonan Gugur</span>
-                <span class="stat-value">{{ stats.rejected }}</span>
+                <span class="stat-title">Overdue SLA</span>
+                <span class="stat-value">{{ stats.overdue || 0 }} Kasus</span>
             </div>
         </div>
 
@@ -234,7 +230,8 @@ const downloadExcel = () => {
                 </td>
                 <td class="text-sm">{{ new Date(proj.created_at).toLocaleString('id-ID') }}</td>
                 <td class="actions">
-                    <button @click="openEvaluateModal(proj)" class="btn-icon btn-edit" style="background:#f3e8ff; color:#7c3aed">Review Permohonan</button>
+                    <button v-if="proj.status === 'verification' || proj.status === 'assigned'" @click="alert('Memulai Review...'); proj.status = 'in_review'" class="btn-icon" style="background:#10b981; color:white">▶ Mulai Review</button>
+                    <button v-if="proj.status === 'in_review'" @click="openEvaluateModal(proj)" class="btn-icon btn-edit" style="background:#f3e8ff; color:#7c3aed">Lanjutkan Evaluasi</button>
                 </td>
                 </tr>
             </tbody>
