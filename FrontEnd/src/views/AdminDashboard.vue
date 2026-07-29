@@ -47,9 +47,12 @@ onMounted(() => {
       <div class="brand">Control Panel</div>
       <nav class="nav-menu">
         <a href="#" class="nav-link active">Dashboard</a>
-        <a href="#" class="nav-link">Kelola User</a>
-        <a href="#" class="nav-link">Master Data</a>
+        <a href="#" class="nav-link">Monitoring Permohonan</a>
+        <a href="#" class="nav-link">Master User</a>
+        <a href="#" class="nav-link">Master Dokumen</a>
+        <a href="#" class="nav-link">Master Company</a>
         <a href="#" class="nav-link">Activity Log</a>
+        <a href="#" class="nav-link">Approval Log</a>
       </nav>
       <div class="sidebar-footer">
         <button @click="handleLogout" class="btn-logout">Logout</button>

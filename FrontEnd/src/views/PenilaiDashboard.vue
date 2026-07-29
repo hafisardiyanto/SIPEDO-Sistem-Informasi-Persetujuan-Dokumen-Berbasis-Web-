@@ -274,13 +274,21 @@ const downloadExcel = () => {
                     {{ selectedProject.description }}
                 </div>
 
-                <h3 style="font-size:1rem; margin-top:1.5rem; margin-bottom:0.5rem">Unduh Lampiran Resmi</h3>
-                <ul v-if="selectedProject.documents && selectedProject.documents.length > 0" style="padding-left:1.2rem; font-size:0.9rem; line-height:1.6">
-                    <li v-for="doc in selectedProject.documents" :key="doc.id">
-                        <strong style="text-transform: capitalize">{{ doc.category }}:</strong> 
-                        <a :href="'http://localhost:8000/storage/' + doc.file_path" target="_blank" style="color: #2563eb; text-decoration: none">{{ doc.file_name }}</a>
-                    </li>
-                </ul>
+                <h3 style="font-size:1rem; margin-top:1.5rem; margin-bottom:0.5rem">Preview Inline Berkas Dokumen</h3>
+                <div v-if="selectedProject.documents && selectedProject.documents.length > 0" style="display:flex; flex-direction:column; gap:10px;">
+                    <div v-for="doc in selectedProject.documents" :key="doc.id" style="border: 1px solid #cbd5e1; border-radius:8px; overflow:hidden">
+                        <div style="background:#f1f5f9; padding: 0.5rem; font-weight:bold; font-size: 0.85rem; border-bottom:1px solid #cbd5e1">
+                            {{ doc.category.toUpperCase() }} - {{ doc.file_name }}
+                        </div>
+                        <iframe :src="'http://localhost:8000/storage/' + doc.file_path" 
+                                style="width:100%; height:300px; border:none;" 
+                                v-if="doc.file_path.endsWith('.pdf')">
+                        </iframe>
+                        <div v-else style="padding:1rem; text-align:center; font-size:0.85rem">
+                            File bukan PDF. <a :href="'http://localhost:8000/storage/' + doc.file_path" target="_blank">Unduh & Buka</a>
+                        </div>
+                    </div>
+                </div>
                 <div v-else style="font-size:0.85rem; color:#ef4444; font-weight:bold">⚠ Tidak ada file terlampir. Wajib tolak/revisi.</div>
             </div>
 
