@@ -10,6 +10,17 @@ use Illuminate\Support\Facades\DB;
 
 class ProjectController extends Controller
 {
+    private function recordStatusHistory($projectId, $oldStatus, $newStatus, $notes = null)
+    {
+        \App\Models\ProjectStatusHistory::create([
+            'project_id' => $projectId,
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus,
+            'changed_by_user_id' => Auth::id(),
+            'notes' => $notes
+        ]);
+    }
+
     public function index(Request $request)
     {
         $query = Auth::user()->projects()->with('documents');
