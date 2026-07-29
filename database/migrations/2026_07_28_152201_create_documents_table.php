@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('file_name');
             $table->string('file_path');
             $table->string('file_type')->nullable();
+            $table->enum('category', ['utama', 'lampiran', 'pengantar', 'pendukung'])->default('utama');
             $table->timestamps();
         });
     }

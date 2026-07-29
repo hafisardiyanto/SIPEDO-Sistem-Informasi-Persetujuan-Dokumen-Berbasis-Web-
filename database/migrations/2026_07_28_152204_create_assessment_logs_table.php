@@ -17,6 +17,8 @@ return new class extends Migration {
             $table->string('status_from')->nullable();
             $table->string('status_to');
             $table->text('notes')->nullable();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
             $table->timestamps();
         });
     }

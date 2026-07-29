@@ -13,7 +13,8 @@ class Document extends Model
         'project_id',
         'file_name',
         'file_path',
-        'file_type'
+        'file_type',
+        'category'
     ];
 
     public function project()

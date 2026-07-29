@@ -11,10 +11,35 @@ class Project extends Model
 
     protected $fillable = [
         'user_id',
+        'project_number',
         'title',
+        'company_name',
+        'pic_name',
+        'phone',
+        'email_pic',
+        'doc_type',
         'description',
-        'status'
+        'additional_notes',
+        'status',
+        'reviewer_id',
+        'submitted_at',
+        'reviewed_at',
+        'approved_at',
+        'rejected_at',
+        'revision_count'
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($project) {
+            if (!$project->project_number) {
+                $date = now()->format('Ymd');
+                $lastProject = self::whereDate('created_at', now()->toDateString())->orderBy('id', 'desc')->first();
+                $number = $lastProject ? (int) substr($lastProject->project_number, -6) + 1 : 1;
+                $project->project_number = 'DOC-' . $date . '-' . str_pad($number, 6, '0', STR_PAD_LEFT);
+            }
+        });
+    }
 
     public function user()
     {

@@ -14,7 +14,9 @@ class AssessmentLog extends Model
         'assessor_id',
         'status_from',
         'status_to',
-        'notes'
+        'notes',
+        'ip_address',
+        'user_agent'
     ];
 
     public function project()

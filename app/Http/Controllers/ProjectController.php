@@ -6,13 +6,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Project;
 use App\Models\Document;
+use Illuminate\Support\Facades\DB;
 
 class ProjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Auth::user()->projects()->with('documents')->latest()->get();
-        return response()->json(['data' => $projects]);
+        $query = Auth::user()->projects()->with('documents');
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                    ->orWhere('project_number', 'like', '%' . $request->search . '%')
+                    ->orWhere('company_name', 'like', '%' . $request->search . '%');
+            });
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Return lengthAwarePaginator object
+        return response()->json($query->latest()->paginate(10));
     }
 
     public function store(Request $request)
@@ -24,67 +38,127 @@ class ProjectController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'document' => 'required|file|mimes:pdf,doc,docx|max:10240',
+            'company_name' => 'nullable|string|max:255',
+            'pic_name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string',
+            'email_pic' => 'nullable|email',
+            'doc_type' => 'nullable|string',
+            'additional_notes' => 'nullable|string',
+            'document_utama' => 'nullable|file|mimes:pdf,doc,docx|max:20480', // 20MB Check
+            'document_lampiran' => 'nullable|file|mimes:pdf,doc,docx,zip,rar|max:20480',
+            'document_pengantar' => 'nullable|file|mimes:pdf,doc,docx|max:20480',
+            'document_pendukung' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:20480',
         ]);
 
-        $project = Auth::user()->projects()->create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'status' => 'draft',
-        ]);
-
-        if ($request->hasFile('document')) {
-            $file = $request->file('document');
-            $path = $file->store('documents', 'public');
-            $project->documents()->create([
-                'file_name' => $file->getClientOriginalName(),
-                'file_path' => $path,
-                'file_type' => $file->getClientOriginalExtension(),
+        DB::beginTransaction();
+        try {
+            $project = Auth::user()->projects()->create([
+                'title' => $request->title,
+                'description' => $request->description,
+                'company_name' => $request->company_name,
+                'pic_name' => $request->pic_name,
+                'phone' => $request->phone,
+                'email_pic' => $request->email_pic,
+                'doc_type' => $request->doc_type,
+                'additional_notes' => $request->additional_notes,
+                'status' => 'draft',
             ]);
-        }
 
-        return response()->json(['message' => 'Project created', 'data' => $project->load('documents')], 201);
+            // Save multi-files dynamically based on category
+            $categories = ['utama' => 'document_utama', 'lampiran' => 'document_lampiran', 'pengantar' => 'document_pengantar', 'pendukung' => 'document_pendukung'];
+            foreach ($categories as $cat => $fileKey) {
+                if ($request->hasFile($fileKey)) {
+                    $file = $request->file($fileKey);
+                    $path = $file->store('documents/' . $cat, 'public');
+                    $project->documents()->create([
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'file_type' => $file->getClientOriginalExtension(),
+                        'category' => $cat
+                    ]);
+                }
+            }
+            DB::commit();
+            return response()->json(['message' => 'Project created', 'data' => $project->load('documents')], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
+        }
     }
 
-    public function show(Project $project)
+    public function show($id)
     {
+        $project = Project::with('documents', 'assessmentLogs.assessor')->findOrFail($id);
+
         if ($project->user_id !== Auth::id())
             return response()->json(['message' => 'Forbidden'], 403);
 
-        return response()->json(['data' => $project->load('documents', 'assessmentLogs.assessor')]);
+        return response()->json(['data' => $project]);
     }
 
-    public function update(Request $request, Project $project)
+    public function update(Request $request, $id)
     {
+        $project = Project::findOrFail($id);
+
         if ($project->user_id !== Auth::id() || $project->status !== 'draft') {
             return response()->json(['message' => 'Forbidden or not in draft'], 403);
         }
 
         $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'sometimes|required|string',
-            'document' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'company_name' => 'nullable|string|max:255',
+            'pic_name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string',
+            'email_pic' => 'nullable|email',
+            'doc_type' => 'nullable|string',
+            'additional_notes' => 'nullable|string',
+            'document_utama' => 'nullable|file|mimes:pdf,doc,docx|max:20480',
+            'document_lampiran' => 'nullable|file|mimes:pdf,doc,docx,zip,rar|max:20480',
+            'document_pengantar' => 'nullable|file|mimes:pdf,doc,docx|max:20480',
+            'document_pendukung' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:20480',
         ]);
 
-        $project->update($request->only('title', 'description'));
+        DB::beginTransaction();
+        try {
+            $project->update($request->only(
+                'title',
+                'description',
+                'company_name',
+                'pic_name',
+                'phone',
+                'email_pic',
+                'doc_type',
+                'additional_notes'
+            ));
 
-        if ($request->hasFile('document')) {
-            $project->documents()->delete(); // Replace old for MVP
+            $categories = ['utama' => 'document_utama', 'lampiran' => 'document_lampiran', 'pengantar' => 'document_pengantar', 'pendukung' => 'document_pendukung'];
+            foreach ($categories as $cat => $fileKey) {
+                if ($request->hasFile($fileKey)) {
+                    // Delete old file of same category
+                    $project->documents()->where('category', $cat)->delete();
 
-            $file = $request->file('document');
-            $path = $file->store('documents', 'public');
-            $project->documents()->create([
-                'file_name' => $file->getClientOriginalName(),
-                'file_path' => $path,
-                'file_type' => $file->getClientOriginalExtension(),
-            ]);
+                    $file = $request->file($fileKey);
+                    $path = $file->store('documents/' . $cat, 'public');
+                    $project->documents()->create([
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'file_type' => $file->getClientOriginalExtension(),
+                        'category' => $cat
+                    ]);
+                }
+            }
+            DB::commit();
+            return response()->json(['message' => 'Project updated', 'data' => $project->load('documents')]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
         }
-
-        return response()->json(['message' => 'Project updated', 'data' => $project->load('documents')]);
     }
 
-    public function submit(Project $project)
+    public function submit($id)
     {
+        $project = Project::findOrFail($id);
         if ($project->user_id !== Auth::id()) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -92,12 +166,16 @@ class ProjectController extends Controller
             return response()->json(['message' => 'Project cannot be submitted'], 400);
         }
 
-        $project->update(['status' => 'submitted']);
+        $project->update([
+            'status' => 'submitted',
+            'submitted_at' => now(),
+        ]);
         return response()->json(['message' => 'Project submitted successfully']);
     }
 
-    public function history(Project $project)
+    public function history($id)
     {
+        $project = Project::findOrFail($id);
         if ($project->user_id !== Auth::id())
             return response()->json(['message' => 'Forbidden'], 403);
         return response()->json(['data' => $project->assessmentLogs()->with('assessor')->latest()->get()]);
