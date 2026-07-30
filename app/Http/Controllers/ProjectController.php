@@ -128,8 +128,8 @@ class ProjectController extends Controller
     {
         $project = Project::findOrFail($id);
 
-        if ($project->user_id !== Auth::id() || $project->status !== 'draft') {
-            return response()->json(['message' => 'Forbidden or not in draft'], 403);
+        if ($project->user_id !== Auth::id() || !in_array($project->status, ['draft', 'revision'])) {
+            return response()->json(['message' => 'Forbidden or not in draft/revision status'], 403);
         }
 
         $messages = [

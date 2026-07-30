@@ -299,7 +299,7 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="proj in paginatedData.data.filter(p => !['approved','rejected'].includes(p.status))" :key="proj.id">
+                    <tr v-for="proj in paginatedData.data.filter(p => !['approved','rejected','revision'].includes(p.status))" :key="proj.id">
                         <td>
                             <strong style="color:#7c3aed">{{ proj.project_number }}</strong>
                             <div class="text-sm text-gray" style="margin-top:4px">{{ proj.company_name }}</div>
@@ -347,7 +347,7 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="proj in paginatedData.data.filter(p => ['approved','rejected'].includes(p.status))" :key="proj.id">
+                    <tr v-for="proj in paginatedData.data.filter(p => ['approved','rejected','revision'].includes(p.status))" :key="proj.id">
                         <td><strong>{{ proj.company_name }}</strong><br/><small>{{ proj.project_number }}</small></td>
                         <td>{{ new Date(proj.updated_at).toLocaleDateString('id-ID') }}</td>
                         <td><span style="color:#10b981; font-weight:bold">2.4 Hari</span></td>
