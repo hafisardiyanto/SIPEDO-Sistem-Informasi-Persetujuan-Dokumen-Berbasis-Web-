@@ -10,6 +10,8 @@ use App\Http\Controllers\DashboardController;
 
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\DocumentTypeController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -45,4 +47,21 @@ Route::middleware('auth:sanctum')->group(function () {
     // Penilai APIs
     Route::get('/assessments', [AssessmentLogController::class, 'index']);
     Route::post('/assessments/{project}/evaluate', [AssessmentLogController::class, 'evaluate']);
+
+    // Admin APIs
+    Route::prefix('admin')->group(function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::post('/users', [UserController::class, 'store']);
+        Route::get('/users/{id}', [UserController::class, 'show']);
+        Route::put('/users/{id}', [UserController::class, 'update']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        Route::post('/users/{id}/toggle', [UserController::class, 'toggleStatus']);
+
+        // Document Types API
+        Route::get('/document-types', [DocumentTypeController::class, 'index']);
+        Route::post('/document-types', [DocumentTypeController::class, 'store']);
+        Route::put('/document-types/{id}', [DocumentTypeController::class, 'update']);
+        Route::post('/document-types/{id}/toggle', [DocumentTypeController::class, 'toggle']);
+        Route::delete('/document-types/{id}', [DocumentTypeController::class, 'destroy']);
+    });
 });
