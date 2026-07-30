@@ -548,7 +548,7 @@ onMounted(() => {
                     </button>
                     <!-- Submit Application Button -->
                     <button type="button" @click="submitForm('submit')" :disabled="formUploading" style="padding:1rem 2rem; border-radius:8px; border:none; background:#10b981; color:white; font-size:1.1rem; font-weight:bold; min-width:300px; cursor:pointer; text-align:center">
-                        {{ formUploading ? '🚀 Meluncurkan Ke Server (Uploading...)' : '🚀 Ajukan Permohonan Rill' }}
+                        {{ formUploading ? '🚀 Meluncurkan Ke Server (Uploading...)' : '🚀 Ajukan Permohonan' }}
                     </button>
                 </div>
 

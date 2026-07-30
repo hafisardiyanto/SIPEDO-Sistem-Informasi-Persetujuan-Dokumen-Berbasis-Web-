@@ -490,7 +490,7 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
             </div>
 
             <!-- PANEL KANAN: FORM EVALUASI & CATATAN PENILAI -->
-            <div style="display:flex; flex-direction:column">
+            <div style="display:flex; flex-direction:column; overflow-y:auto; padding-right: 0.5rem">
                 <h2 style="font-size:1.1rem; border-bottom: 2px solid #10b981; padding-bottom: 0.5rem; margin-bottom:1rem">Palet Keputusan Review</h2>
                 
                 <div style="background:#f8fafc; border: 1px solid #e2e8f0; border-radius:8px; padding:1.5rem; flex:1">
