@@ -143,6 +143,22 @@ const versionedDocuments = computed(() => {
     return result;
 });
 
+// Chart configuration for statistics
+const chartOptions = ref({
+  chart: { type: 'donut', fontFamily: 'inherit' },
+  labels: ['Draft', 'Terkirim', 'Dalam Review', 'Revisi', 'Disetujui', 'Ditolak'],
+  colors: ['#cbd5e1', '#3b82f6', '#eab308', '#f97316', '#10b981', '#ef4444'],
+  dataLabels: { enabled: true, dropShadow: { enabled: false } },
+  stroke: { width: 0 },
+  plotOptions: { pie: { donut: { size: '70%' } } },
+});
+
+const chartSeries = computed(() => {
+    if (!stats.value.by_status) return [0,0,0,0,0,0];
+    const s = stats.value.by_status;
+    return [s.draft, s.submitted, s.in_review, s.revision, s.approved, s.rejected];
+});
+
 const openEvaluateModal = async (project) => {
     selectedProject.value = project
     evalData.value.status = '' 
@@ -277,11 +293,20 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
                 </div>
             </div>
             
-            <!-- Welcome Splash -->
+            <!-- Analytic Charts Section -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-top:2rem">
+                <!-- Visualisasi Status Proyek -->
+                <div style="background:white; border-radius:12px; padding:2rem; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1)">
+                    <h3 style="margin-bottom:1rem; color:#1e293b">Distribusi Status Dokumen</h3>
+                    <apexchart type="donut" width="100%" height="320" :options="chartOptions" :series="chartSeries"></apexchart>
+                </div>
+                
+                <!-- Welcome Splash -->
             <div style="background: white; padding: 2rem; border-radius: 12px; margin-top:2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); text-align:center">
                 <h2>Selamat Datang di Command Center!</h2>
                 <p style="color:#64748b">Silakan buka tab "Assignment Saya" untuk mulai memproses dokumen dalam antrean audit.</p>
                 <img src="https://ui-avatars.com/api/?name=SLA+Dashboard&background=f1f5f9&color=7c3aed&size=100" style="margin-top:1rem; border-radius:50%">
+            </div>
             </div>
         </div>
 

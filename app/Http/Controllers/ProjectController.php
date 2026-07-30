@@ -92,18 +92,19 @@ class ProjectController extends Controller
                 'status' => 'draft',
             ]);
 
-            // Save multi-files dynamically based on category
+            // Save multi-files dynamically based on category ASYNCHRONOUSLY using Queues
             $categories = ['utama' => 'document_utama', 'lampiran' => 'document_lampiran', 'pengantar' => 'document_pengantar', 'pendukung' => 'document_pendukung'];
             foreach ($categories as $cat => $fileKey) {
                 if ($request->hasFile($fileKey)) {
                     $file = $request->file($fileKey);
-                    $path = $file->store('documents/' . $cat, 'public');
-                    $project->documents()->create([
-                        'file_name' => $file->getClientOriginalName(),
-                        'file_path' => $path,
-                        'file_type' => $file->getClientOriginalExtension(),
-                        'category' => $cat
-                    ]);
+
+                    // Generate temp path
+                    $tempPath = $file->store('temp_documents', 'local');
+                    $origName = $file->getClientOriginalName();
+                    $ext = $file->getClientOriginalExtension();
+
+                    // Dispatch Job to background queue (Worker)
+                    \App\Jobs\ProcessDocumentUploadJob::dispatch($project->id, $cat, $origName, $ext, $tempPath);
                 }
             }
             DB::commit();
