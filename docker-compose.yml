@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: localhost/sipedo_app:latest
     container_name: sipedo_app
     restart: unless-stopped
     working_dir: /var/www
@@ -14,11 +15,11 @@ services:
       - sipedo_network
 
   web:
-    image: nginx:alpine
+    image: docker.io/library/nginx:alpine
     container_name: sipedo_nginx
     restart: unless-stopped
     ports:
-      - "8094:80"    # Port Utama Aplikasi di Server Ubuntu
+      - "8094:80" # Port Utama Aplikasi di Server Ubuntu
     volumes:
       - ./:/var/www
       - ./docker/nginx/:/etc/nginx/conf.d/
@@ -28,7 +29,7 @@ services:
       - app
 
   db:
-    image: postgres:15
+    image: docker.io/library/postgres:15
     container_name: sipedo_db
     restart: unless-stopped
     environment:
@@ -36,21 +37,21 @@ services:
       POSTGRES_USER: sipedouser
       POSTGRES_PASSWORD: sipedopassword
     ports:
-      - "3312:5432"  # Port Aman Database di Server Ubuntu
+      - "3312:5432" # Port Aman Database di Server Ubuntu
     volumes:
       - sipedo_pgdata:/var/lib/postgresql/data
     networks:
       - sipedo_network
 
   adminer:
-    image: dpage/pgadmin4
+    image: docker.io/dpage/pgadmin4:latest
     container_name: sipedo_pgadmin
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@sipedo.com
       PGADMIN_DEFAULT_PASSWORD: administration
     ports:
-      - "8095:80"    # Port Aman Manajemen DB
+      - "8095:80" # Port Aman Manajemen DB
     networks:
       - sipedo_network
 

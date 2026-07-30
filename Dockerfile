@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM docker.io/library/php:8.2-fpm
 
 # Install dependencies yang dibutuhkan sistem operasi Linux container
 RUN apt-get update && apt-get install -y \
@@ -27,7 +27,7 @@ RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
     && docker-php-ext-install gd
 
 # Instalasi komposer global
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=docker.io/library/composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
