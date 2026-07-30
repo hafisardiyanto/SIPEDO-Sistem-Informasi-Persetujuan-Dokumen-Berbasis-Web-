@@ -234,7 +234,7 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
                 <small>{{ user.email }}</small>
             </div>
         </div>
-        <button @click="logout" class="btn-logout">Sign Out</button>
+        <button @click="logout" class="btn-logout">Logout</button>
       </div>
     </aside>
 
@@ -339,8 +339,8 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
                             <span :class="['badge', getStatusBadgeClass(proj.status)]">{{ proj.status.toUpperCase() }}</span>
                         </td>
                         <td class="actions" style="justify-content:flex-end">
-                            <button v-if="proj.status === 'submitted' || proj.status === 'assigned'" @click="claimAssignment(proj)" class="btn-icon" style="background:#10b981; color:white">▶ Ambil Assignment</button>
-                            <button v-if="proj.status === 'in_review' || proj.status === 'revision'" @click="openEvaluateModal(proj)" class="btn-icon btn-edit" style="background:#f3e8ff; color:#7c3aed">📋 Lanjutkan Evaluasi</button>
+                            <button v-if="proj.status === 'submitted' || proj.status === 'assigned'" @click="claimAssignment(proj)" class="btn-icon" style="background:#10b981; color:white">▶ Ambil Tugas</button>
+                            <button v-if="proj.status === 'in_review' || proj.status === 'revision'" @click="openEvaluateModal(proj)" class="btn-icon btn-edit" style="background:#f3e8ff; color:#7c3aed">📋 Review Dokumen</button>
                         </td>
                     </tr>
                 </tbody>
@@ -384,8 +384,8 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
                 <h2>Unduh Rekapitulasi Data</h2>
                 <p style="color:#64748b; margin-bottom:1.5rem">Ekspor seluruh data riwayat persetujuan beserta lampiran statusnya.</p>
                 <div style="display:flex; gap:1rem">
-                    <button @click="downloadExcel" class="btn-view" style="background:#059669; color:white; padding:1rem 2rem; border:none; cursor:pointer; font-weight:bold; border-radius:8px">📊 Unduh Laporan Excel (CSV)</button>
-                    <button @click="downloadPDF" class="btn-view" style="background:#dc2626; color:white; padding:1rem 2rem; border:none; cursor:pointer; font-weight:bold; border-radius:8px">🖨️ Cetak Laporan PDF</button>
+                    <button @click="downloadExcel" class="btn-view" style="background:#059669; color:white; padding:1rem 2rem; border:none; cursor:pointer; font-weight:bold; border-radius:8px">📊 Export Excel</button>
+                    <button @click="downloadPDF" class="btn-view" style="background:#dc2626; color:white; padding:1rem 2rem; border:none; cursor:pointer; font-weight:bold; border-radius:8px">🖨️ Export PDF</button>
                 </div>
             </div>
         </div>
@@ -429,7 +429,7 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
                         <label style="display:block; margin-bottom:0.5rem; color:#475569; font-weight:600">Ubah Password Autentikasi</label>
                         <input type="password" placeholder="Ketik sandi baru..." style="width:100%; border:1px solid #cbd5e1; padding:1rem; border-radius:8px; font-family:inherit; font-size:1rem; box-sizing:border-box">
                     </div>
-                    <button style="background:#7c3aed; color:white; padding:1rem; border-radius:8px; margin-top:1rem; border:none; cursor:pointer; font-weight:bold; font-size:1rem" @click="alert('✅ Pembaharuan Identitas & Kata Sandi Diamankan!')">Simpan Pembaruan Profil</button>
+                    <button style="background:#7c3aed; color:white; padding:1rem; border-radius:8px; margin-top:1rem; border:none; cursor:pointer; font-weight:bold; font-size:1rem" @click="alert('✅ Pembaharuan Identitas & Kata Sandi Diamankan!')">Simpan Perubahan</button>
                 </div>
              </div>
         </div>
@@ -554,7 +554,7 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
             </p>
             <div style="display:flex; justify-content:center; gap:1rem">
                 <button @click="showConfirmModal = false" style="padding:0.75rem 1.5rem; border:1px solid #cbd5e1; border-radius:8px; background:white; cursor:pointer; font-weight:bold">Batal</button>
-                <button @click="executeEvaluation" style="padding:0.75rem 1.5rem; border:none; border-radius:8px; background:#7c3aed; color:white; font-weight:bold; cursor:pointer">Sah & Eksekusi!</button>
+                <button @click="executeEvaluation" style="padding:0.75rem 1.5rem; border:none; border-radius:8px; background:#7c3aed; color:white; font-weight:bold; cursor:pointer">Simpan Keputusan</button>
             </div>
         </div>
     </div>

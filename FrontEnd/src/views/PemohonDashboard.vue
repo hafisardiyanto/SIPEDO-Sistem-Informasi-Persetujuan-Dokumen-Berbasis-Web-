@@ -17,8 +17,20 @@ const filterStatus = ref('')
 
 const fetchStats = async () => {
     try {
-        const res = await axios.get('/api/dashboard/stats')
+        const res = await axios.get('/api/dashboard/stats', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        })
         stats.value = res.data.data
+    } catch(err) {}
+}
+
+const docTypes = ref([])
+const fetchDocTypes = async () => {
+    try {
+        const res = await axios.get('/api/admin/document-types', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        })
+        docTypes.value = res.data.data.filter(d => d.is_active)
     } catch(err) {}
 }
 
@@ -261,6 +273,7 @@ onMounted(() => {
     }
     fetchStats()
     fetchProjects()
+    fetchDocTypes()
 })
 </script>
 
@@ -364,11 +377,11 @@ onMounted(() => {
                 <td class="actions">
                     <button v-if="viewingTrash" @click="restoreProject(proj.id)" class="btn-icon btn-view" style="color:#10b981">♻️ Pulihkan</button>
                     <template v-else>
-                        <button v-if="proj.status === 'draft'" @click="deleteProject(proj.id)" class="btn-icon btn-edit" style="color:#ef4444; margin-right:5px">🗑️ Buang</button>
-                        <button v-if="proj.status === 'draft'" @click="openEditModal(proj)" class="btn-icon btn-edit" style="background:#f1f5f9;border:1px solid #cbd5e1">✏️ Edit Draf</button>
-                        <button v-if="proj.status === 'submitted'" @click="cancelProject(proj.id)" class="btn-icon btn-edit" style="color:#f59e0b; margin-right:5px">🚫 Batal</button>
-                        <button v-if="proj.status === 'revision'" @click="openEditModal(proj)" class="btn-icon btn-edit" style="background:#fee2e2; color:#ef4444; border:1px solid #fca5a5; font-weight:bold">⚠ Revisi Formulir</button>
-                        <button @click="viewDetails(proj)" class="btn-icon btn-view" style="background:#f3e8ff; color:#7c3aed">📃 Buka Detail</button>
+                        <button v-if="proj.status === 'draft'" @click="deleteProject(proj.id)" class="btn-icon btn-edit" style="color:#ef4444; margin-right:5px">🗑️ Hapus Draft</button>
+                        <button v-if="proj.status === 'draft'" @click="openEditModal(proj)" class="btn-icon btn-edit" style="background:#f1f5f9;border:1px solid #cbd5e1">✏️ Edit Draft</button>
+                        <button v-if="proj.status === 'submitted'" @click="cancelProject(proj.id)" class="btn-icon btn-edit" style="color:#f59e0b; margin-right:5px">🚫 Batalkan Permohonan</button>
+                        <button v-if="proj.status === 'revision'" @click="openEditModal(proj)" class="btn-icon btn-edit" style="background:#fee2e2; color:#ef4444; border:1px solid #fca5a5; font-weight:bold">📤 Unggah Revisi</button>
+                        <button @click="viewDetails(proj)" class="btn-icon btn-view" style="background:#f3e8ff; color:#7c3aed">� Lihat Detail</button>
                     </template>
                 </td>
                 </tr>
@@ -446,9 +459,7 @@ onMounted(() => {
                         <label>Jenis Dokumen Registrasi</label>
                         <select v-model="formData.doc_type" required>
                             <option value="">-- Pilih Jenis Dokumen --</option>
-                            <option value="surat_izin_legalitas">Surat Izin Umum (Legalitas)</option>
-                            <option value="izin_lingkungan">Sertifikat AMDAL / Lingkungan Utama</option>
-                            <option value="bangunan_gedung">Pengesahan Bangunan (SIMBG)</option>
+                            <option v-for="d in docTypes" :key="d.id" :value="d.name">{{ d.name }}</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -540,11 +551,11 @@ onMounted(() => {
                 <!-- GRUP E: ACTIONS -->
                 <div style="border-top:2px solid #e2e8f0; padding-top:1.5rem; display:flex; justify-content:flex-end; gap:1rem; flex-wrap:wrap">
                     <button type="button" @click="showFormModal = false" style="padding:1rem 2rem; border-radius:8px; border:1px solid #cbd5e1; background:white; color:#475569; font-weight:bold; cursor:pointer">
-                        Batalkan (Keluar)
+                        ❌ Tutup
                     </button>
                     <!-- Draft Button Only Available if not submitted or revision status -->
                     <button v-if="!['revision','submitted'].includes(formMeta.status)" type="button" @click="submitForm('draft')" :disabled="formUploading" style="padding:1rem 2rem; border-radius:8px; border:1px solid #3b82f6; background:#eff6ff; color:#3b82f6; font-weight:bold; cursor:pointer">
-                        💾 Simpan ke Draft
+                        💾 Simpan Draft
                     </button>
                     <!-- Submit Application Button -->
                     <button type="button" @click="submitForm('submit')" :disabled="formUploading" style="padding:1rem 2rem; border-radius:8px; border:none; background:#10b981; color:white; font-size:1.1rem; font-weight:bold; min-width:300px; cursor:pointer; text-align:center">

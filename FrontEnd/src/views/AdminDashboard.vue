@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import '../assets/admin-dashboard.css'
@@ -9,10 +9,15 @@ const user = ref(JSON.parse(localStorage.getItem('user')) || {})
 const stats = ref(null)
 const loading = ref(true)
 const activeTab = ref('dashboard')
+let pollingInterval = null;
 
 // User Management State
 const users = ref([])
 const loadingUsers = ref(false)
+const showUserModal = ref(false)
+const userForm = ref({ id: null, name: '', email: '', password: '', role: 'pemohon' })
+const userFormError = ref('')
+
 const docTypes = ref([])
 const loadingDocs = ref(false)
 const showDocModal = ref(false)
@@ -36,7 +41,6 @@ const fetchStats = async () => {
 
 // USER CRUD LOGIC
 const fetchUsers = async () => {
-  loadingUsers.value = true
   try {
     const res = await axios.get('/api/admin/users', getConfigHeaders())
     users.value = res.data.data
@@ -156,7 +160,16 @@ onMounted(() => {
     router.push('/')
   } else {
     fetchStats()
+    // REAL-TIME POLLING ENGINE
+    pollingInterval = setInterval(() => {
+        if(activeTab.value === 'dashboard') fetchStats();
+        if(activeTab.value === 'users') fetchUsers();
+    }, 5000); // Sinkronisasi otomatis setiap 5 detik
   }
+})
+
+onUnmounted(() => {
+  if(pollingInterval) clearInterval(pollingInterval);
 })
 </script>
 
@@ -214,7 +227,7 @@ onMounted(() => {
         <div v-if="activeTab==='users'">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem">
                <h3>Manajemen Pengguna (Pegawai & Klien)</h3>
-               <button @click="openUserModal(null)" style="background:#2563eb; color:white; padding:0.6rem 1rem; border:none; border-radius:6px; font-weight:bold; cursor:pointer">+ Entri User Baru</button>
+               <button @click="openUserModal(null)" style="background:#2563eb; color:white; padding:0.6rem 1rem; border:none; border-radius:6px; font-weight:bold; cursor:pointer">Tambah User</button>
             </div>
 
             <table style="width:100%; border-collapse:collapse; background:white; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1)">
@@ -241,7 +254,7 @@ onMounted(() => {
                         </td>
                         <td style="padding:1rem; text-align:right; display:flex; gap:0.5rem; justify-content:flex-end">
                             <button @click="openUserModal(u)" style="padding:0.4rem 0.8rem; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; background:white">Edit</button>
-                            <button @click="toggleUserStatus(u)" :style="{padding:'0.4rem 0.8rem', border:'1px solid #cbd5e1', borderRadius:'4px', cursor:'pointer', background: u.is_active ? '#fee2e2':'#dcfce3'}">{{ u.is_active ? 'Suspend' : 'Aktivasi' }}</button>
+                            <button @click="toggleUserStatus(u)" :style="{padding:'0.4rem 0.8rem', border:'1px solid #cbd5e1', borderRadius:'4px', cursor:'pointer', background: u.is_active ? '#fee2e2':'#dcfce3'}">{{ u.is_active ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}</button>
                             <button @click="deleteUser(u.id)" style="padding:0.4rem 0.8rem; border:none; border-radius:4px; cursor:pointer; background:#dc2626; color:white">Hapus</button>
                         </td>
                      </tr>
@@ -253,7 +266,7 @@ onMounted(() => {
         <div v-if="activeTab==='docs'">
              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem">
                <h3>Konfigurasi Jenis Dokumen (Master Data)</h3>
-               <button @click="openDocModal(null)" style="background:#2563eb; color:white; padding:0.6rem 1rem; border:none; border-radius:6px; font-weight:bold; cursor:pointer">+ Formulir Baru</button>
+               <button @click="openDocModal(null)" style="background:#2563eb; color:white; padding:0.6rem 1rem; border:none; border-radius:6px; font-weight:bold; cursor:pointer">+ Tambah Jenis Dokumen</button>
             </div>
             
              <table style="width:100%; border-collapse:collapse; background:white; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1)">
@@ -314,7 +327,7 @@ onMounted(() => {
 
             <div style="display:flex; justify-content:flex-end; gap:1rem">
                  <button @click="showUserModal=false" style="padding:0.75rem 1.5rem; background:transparent; border:none; font-weight:bold; cursor:pointer; color:#64748b">Batal</button>
-                 <button @click="saveUser" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer">Injeksi ke Sistem</button>
+                 <button @click="saveUser" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer">Simpan</button>
             </div>
         </div>
     </div>
@@ -336,7 +349,7 @@ onMounted(() => {
 
             <div style="display:flex; justify-content:flex-end; gap:1rem">
                  <button @click="showDocModal=false" style="padding:0.75rem 1.5rem; background:transparent; border:none; font-weight:bold; cursor:pointer; color:#64748b">Batal</button>
-                 <button @click="saveDocType" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer">Simpan Ke Sistem</button>
+                 <button @click="saveDocType" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer">Simpan</button>
             </div>
         </div>
     </div>
