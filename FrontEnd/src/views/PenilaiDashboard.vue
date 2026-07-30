@@ -122,7 +122,26 @@ const confirmAction = ref('')
 const evalData = ref({ status: '', notes: '' })
 
 // Control versions mock
-const activeVersion = ref('v1')
+const activeVersion = ref('v2')
+
+const versionedDocuments = computed(() => {
+    if (!selectedProject.value || !selectedProject.value.documents) return [];
+    const categories = {};
+    selectedProject.value.documents.forEach(doc => {
+        if (!categories[doc.category]) categories[doc.category] = [];
+        categories[doc.category].push(doc);
+    });
+    
+    let result = [];
+    for (let cat in categories) {
+        categories[cat].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+        const arr = categories[cat];
+        // v1 maps to oldest (index 0), v2 maps to latest revision (length - 1)
+        const idx = activeVersion.value === 'v1' ? 0 : arr.length - 1;
+        result.push(arr[idx]);
+    }
+    return result;
+});
 
 const openEvaluateModal = async (project) => {
     selectedProject.value = project
@@ -472,8 +491,8 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
                     </div>
                 </div>
 
-                <div v-if="selectedProject.documents && selectedProject.documents.length > 0" style="flex:1; display:flex; flex-direction:column; gap:1rem; overflow-y:auto; padding-right:0.5rem">
-                    <div v-for="doc in selectedProject.documents" :key="doc.id" style="border: 1px solid #cbd5e1; border-radius:8px; display:flex; flex-direction:column; height: 100%; min-height: 400px">
+                <div v-if="versionedDocuments.length > 0" style="flex:1; display:flex; flex-direction:column; gap:1rem; overflow-y:auto; padding-right:0.5rem">
+                    <div v-for="doc in versionedDocuments" :key="doc.id" style="border: 1px solid #cbd5e1; border-radius:8px; display:flex; flex-direction:column; height: 100%; min-height: 400px">
                         <div style="background:#e2e8f0; padding: 0.5rem 1rem; font-size: 0.85rem; display:flex; justify-content:space-between; align-items:center; border-top-left-radius:8px; border-top-right-radius:8px">
                             <strong>{{ doc.category.toUpperCase() }} [{{ activeVersion.toUpperCase() }}]</strong>
                             <a :href="'http://localhost:8000/storage/' + doc.file_path" download style="color:#059669; font-weight:bold; text-decoration:none">Download Induk</a>
