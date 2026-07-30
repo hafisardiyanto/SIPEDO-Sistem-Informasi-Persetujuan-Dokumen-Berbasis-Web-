@@ -42,11 +42,15 @@ class DashboardController extends Controller
 
             $stats['average_review_time'] = $avgSec ? round($avgSec / 86400, 1) : 0;
 
-            $stats['overdue'] = DB::table('project_assignments')
-                ->where('assessor_id', Auth::id())
-                ->join('projects', 'projects.id', '=', 'project_assignments.project_id')
-                ->whereIn('projects.status', ['assigned', 'verification', 'in_review'])
-                ->where('project_assignments.created_at', '<', now()->subDays(3))
+            $stats['overdue'] = DB::table('projects')
+                ->whereIn('status', ['submitted', 'assigned', 'verification', 'in_review', 'revision'])
+                ->where(function ($q) {
+                    $q->where(function ($q2) {
+                        $q2->whereNotNull('deadline_date')->where('deadline_date', '<', now());
+                    })->orWhere(function ($q2) {
+                        $q2->whereNull('deadline_date')->where('created_at', '<', now()->subDays(3));
+                    });
+                })
                 ->count();
 
             $stats['today'] = DB::table('project_reviews')

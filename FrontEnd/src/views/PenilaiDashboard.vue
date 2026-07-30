@@ -23,8 +23,8 @@ const fetchStats = async () => {
     try {
         const res = await axios.get('/api/dashboard/stats')
         stats.value = res.data.data
-        // Mocking total assignment for UI
-        stats.value.total_assignment = stats.value.in_review + stats.value.approved + stats.value.rejected + stats.value.revision;
+        // Fix total assignments calculation mapping UI correctly
+        stats.value.total_assignment = (stats.value.submitted || 0) + (stats.value.in_review || 0) + (stats.value.revision || 0) + (stats.value.approved || 0) + (stats.value.rejected || 0);
     } catch(err) {}
 }
 
@@ -242,7 +242,7 @@ const downloadExcel = () => window.open('http://localhost:8000/api/export/excel?
                 </div>
                 <div class="stat-card warning">
                     <span class="stat-title">Pending Review</span>
-                    <span class="stat-value">{{ stats.in_review || 0 }}</span>
+                    <span class="stat-value">{{ (stats.in_review || 0) + (stats.submitted || 0) + (stats.revision || 0) }}</span>
                 </div>
                 <div class="stat-card primary">
                     <span class="stat-title">Review Hari Ini</span>
