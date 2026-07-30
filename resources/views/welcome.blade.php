@@ -1,15 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SIPEDO</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-
-<body class="bg-gray-100 font-sans antialiased text-gray-900">
+<html lang="">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vite App</title>
+    <script type="module" crossorigin src="/assets/index-DWNyqYRX.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CKhqkGxV.css">
+  </head>
+  <body>
     <div id="app"></div>
-</body>
-
+  </body>
 </html>
