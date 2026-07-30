@@ -41,16 +41,4 @@ Rangkuman pilar struktur Back-End:
 
 Tabel Basis Data Paling Krusial: `users`, `document_types` (Master admin), `projects` (Data borang utama), `documents` (Tabel fisik lokasi file), `project_status_histories` (Jejak riwayat alur hidup file).
 
-## 4. Evaluasi Uji Fungsional Berkala (The Enterprise Grade Pointers)
-Evaluasi terhadap kelulusan teknologi yang ditanamkan dalam repositori lokal saat ini:
 
-*   ✅ **Authentication menggunakan Laravel Sanctum** (Terpasang kuat di Vue & Axios).
-*   ✅ **Role & Permission** (Otorisasi kondisional ketat, blokade Controller, & pemutusan pintu vue *Guards*).
-*   ✅ **Upload file validation** (Berjalan mutlak pada proteksi validasi bawaan PHP *mimes + max-size*).
-*   ✅ **Dashboard menggunakan ApexCharts** (Injeksi interaktif Donat grafik distribusi data di *Penilai* Dashboard `vue3-apexcharts`).
-*   ✅ **Export Excel/PDF** (Berjalan secara aktif di latar menggunakan *Maatwebsite* & *BarryVDH* menuju Response Unduhan Web).
-*   ✅ **Cache (Redis/Laravel Cache)** (Terinjeksikan pada endpoint agregasi hitungan Dasbor per 60 Detik cache memori).
-*   ✅ **Queue untuk unggah/notifikasi** (Struktur migrasi Database Queue & Job *file mover* yang sukses berjalan terpisah).
-*   ❌ **Unit Test / Feature Test** (Tidak ada pembukuan test secara otomatis pada iterasi MVP kali ini).
-*   ❌ **Docker** (Aplikasi dijalankan natif lewat platform lokal Laragon).
-*   ❌ **CI/CD sederhana** (Bukan merupakan objektif pada infrastruktur mesin ini melainkan server).
