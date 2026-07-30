@@ -69,6 +69,7 @@ class ProjectController extends Controller
             'phone' => 'nullable|string',
             'email_pic' => 'nullable|email',
             'doc_type' => 'nullable|string',
+            'deadline_date' => 'nullable|date',
             'additional_notes' => 'nullable|string',
             'document_utama' => 'nullable|file|mimes:pdf,doc,docx|max:20480', // 20MB Check
             'document_lampiran' => 'nullable|file|mimes:pdf,doc,docx,zip,rar|max:20480',
@@ -86,6 +87,7 @@ class ProjectController extends Controller
                 'phone' => $request->phone,
                 'email_pic' => $request->email_pic,
                 'doc_type' => $request->doc_type,
+                'deadline_date' => $request->deadline_date,
                 'additional_notes' => $request->additional_notes,
                 'status' => 'draft',
             ]);
@@ -170,6 +172,7 @@ class ProjectController extends Controller
                 'phone',
                 'email_pic',
                 'doc_type',
+                'deadline_date',
                 'additional_notes'
             ));
 

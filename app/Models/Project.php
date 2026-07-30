@@ -23,6 +23,7 @@ class Project extends Model
         'description',
         'additional_notes',
         'status',
+        'deadline_date',
         'reviewer_id',
         'submitted_at',
         'reviewed_at',

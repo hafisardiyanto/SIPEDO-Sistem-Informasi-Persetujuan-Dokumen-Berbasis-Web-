@@ -90,7 +90,7 @@ const cancelProject = async (projId) => {
 }
 
 const formData = ref({
-    title: '', description: '', company_name: '', pic_name: '', phone: '', email_pic: '', doc_type: '', additional_notes: '', agreement: false
+    title: '', description: '', company_name: '', pic_name: '', phone: '', email_pic: '', doc_type: '', deadline_date: '', additional_notes: '', agreement: false
 })
 
 // Store reference for auto-generated read-only form data
@@ -115,7 +115,7 @@ const openCreateModal = () => {
     isEdit.value = false
     formError.value = ''
     formMeta.value = { project_number: 'AUTO GENERATED (Setelah Disubmit)', status: 'DRAFT', created_at: '-', revisionNote: ''}
-    formData.value = { title: '', description: '', company_name: '', pic_name: '', phone: '', email_pic: '', doc_type: '', additional_notes: '', agreement: false }
+    formData.value = { title: '', description: '', company_name: '', pic_name: '', phone: '', email_pic: '', doc_type: '', deadline_date: '', additional_notes: '', agreement: false }
     filesToUpload.value = { document_utama: null, document_lampiran: null, document_pengantar: null, document_pendukung: null }
     existingFiles.value = { document_utama: null, document_lampiran: null, document_pengantar: null, document_pendukung: null }
     showFormModal.value = true
@@ -152,7 +152,7 @@ const openEditModal = async (proj) => {
     formData.value = { 
         title: fullProj.title, description: fullProj.description, company_name: fullProj.company_name, 
         pic_name: fullProj.pic_name, phone: fullProj.phone, email_pic: fullProj.email_pic, 
-        doc_type: fullProj.doc_type, additional_notes: fullProj.additional_notes, agreement: false 
+        doc_type: fullProj.doc_type, deadline_date: fullProj.deadline_date, additional_notes: fullProj.additional_notes, agreement: false 
     }
     
     filesToUpload.value = { document_utama: null, document_lampiran: null, document_pengantar: null, document_pendukung: null }
@@ -431,8 +431,8 @@ onMounted(() => {
                             <input type="text" :value="formMeta.status.toUpperCase()" disabled style="background:#e2e8f0; color:#475569; font-weight:bold; cursor:not-allowed">
                         </div>
                         <div style="flex:1">
-                            <label>Tanggal Pengajuan</label>
-                            <input type="text" :value="formMeta.created_at" disabled style="background:#e2e8f0; color:#475569; font-weight:bold; cursor:not-allowed">
+                            <label>Batas Waktu (SLA)</label>
+                            <input type="date" v-model="formData.deadline_date" required style="border-radius:8px; border:1px solid #cbd5e1; padding:0.75rem; width:100%">
                         </div>
                     </div>
                 </div>

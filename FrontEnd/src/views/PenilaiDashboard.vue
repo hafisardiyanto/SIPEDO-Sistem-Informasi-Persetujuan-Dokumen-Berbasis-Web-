@@ -38,8 +38,10 @@ const fetchAssessments = async (page = 1) => {
         paginatedData.value.data = paginatedData.value.data.map(proj => {
             proj.ui_priority = proj.id % 3 === 0 ? 'High' : (proj.id % 2 === 0 ? 'Medium' : 'Low');
             // Mock Date for SLA
-            const due = new Date(proj.created_at);
-            due.setDate(due.getDate() + 3);
+            const due = proj.deadline_date ? new Date(proj.deadline_date) : new Date(proj.created_at);
+            if(!proj.deadline_date) {
+                due.setDate(due.getDate() + 3);
+            }
             const now = new Date();
             const diffTime = due - now;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
