@@ -444,7 +444,7 @@ onMounted(() => {
                             <input type="text" :value="formMeta.status.toUpperCase()" disabled style="background:#e2e8f0; color:#475569; font-weight:bold; cursor:not-allowed">
                         </div>
                         <div style="flex:1">
-                            <label>Batas Waktu (SLA)</label>
+                            <label>Tanggal Target</label>
                             <input type="date" v-model="formData.deadline_date" required style="border-radius:8px; border:1px solid #cbd5e1; padding:0.75rem; width:100%">
                         </div>
                     </div>
