@@ -1,44 +1,120 @@
-# 🗺️ Dokumentasi Pemetaan Alur Kode (Code Flow) & Arsitektur SIPEDO V4
+# Dokumentasi Arsitektur & Alur Kerja Lengkap SIPEDO (Sistem Informasi Persetujuan Dokumen)
 
-Dokumen ini menjelaskan keseluruhan tata letak, logika aplikasi, pemetaan kontroler dan model, hak akses (role), serta implementasi teknologi mutakhir pada Sistem Informasi Persetujuan Dokumen (SIPEDO) V4.
+Dokumen ini merangkum pergerakan siklus data *(Data Lifecycle)*, alur logika (*Business Logic*), dan pembagian peran (*Authorization*) dari kedua ujung aplikasi: **Frontend (Vue.js)** sebagai antarmuka dan **Backend (Laravel 11)** sebagai inti pemrosesan API.
 
-## 1. Titik Masuk & Hak Akses (Role & Permission)
-Aplikasi membagi otorisasi menjadi 3 layer (Role), diproteksi ketat menggunakan Token stateless **Laravel Sanctum**.
+---
 
-*   **Administrator (Admin)**
-    *   **Hak Akses**: Akses kontrol penuh. Dapat membuat User baru, menonaktifkan (*suspend*) akun, dan menyetel Master Kategori Dokumen (Pembuatan Jenis Formulir yang muncul di layar klien).
-    *   **Data Controller**: `UserController` (CRUD Pegawai) & `DocumentTypeController` (CRUD Master).
-*   **Penilai (Auditor/Verifikator)**
-    *   **Hak Akses**: Memeriksa, membaca, dan memberikan cap final pada dokumen (Setuju, Revisi, Tolak). Mengakses laporan analitik performa kerja (SLA).
-    *   **Data Controller**: `AssessmentLogController` & fitur Export (`ReportController`).
-*   **Pemohon (Klien)**
-    *   **Hak Akses**: Mengisi formulir entri dokumen, mengunggah lampiran PDF, menyimpan sebagai kepingan `Draft`, lalu mengeksekusinya ke server pusat.
-    *   **Data Controller**: `ProjectController`.
+## DAFTAR ISI (Modul Sistem)
+1. [Arsitektur Keseluruhan (SPA + API)](#1-arsitektur-keseluruhan-spa--api)
+2. [Alur Autentikasi (Login & Sesi)](#2-alur-autentikasi-login--sesi)
+3. [Alur Utama Pemohon: Pengajuan Proyek](#3-alur-utama-pemohon-pengajuan-proyek)
+4. [Alur Penilai: Evaluasi & Log Penilaian](#4-alur-penilai-evaluasi--log-penilaian)
+5. [Alur Admin: Manajemen Pengguna & Referensi (Document Types)](#5-alur-admin-manajemen-pengguna--referensi-document-types)
+6. [Alur Dashboard, Statistik, & Notifikasi](#6-alur-dashboard-statistik--notifikasi)
+7. [Alur Pelaporan & Ekspor Data](#7-alur-pelaporan--ekspor-data)
 
-## 2. Alur Logika Dari Awal Hingga Akhir (End-to-End Logic Flow)
-Seluruh arsitektur aplikasi berangkat dari Front-End (Vue.js) menembus lorong API `routes/api.php` hingga mendarat di database PostgreSQL.
+---
 
-1. **Awal (Registrasi & Login)**
-   *   **Alur**: Klien membuka `LoginView.vue` `=>` Mengetik email & kata sandi `=>` Vue melempar kueri Axios `POST /login` `=>` `AuthController.php`.
-   *   **Garis Akhir**: Token Sanctum terbit. Klien dialihkan secara paksa oleh *Router Guards* menuju `/pemohon`.
-2. **Tahap Penciptaan (Pembuatan Proyek)**
-   *   **Alur**: Klien *(Pemohon Dashboard)* mengisi Form. Data jenis dokumen ditarik dari *Model DocumentType* (Master Admin).
-   *   **Logic**: Klien menekan "Simpan Draft" atau "Ajukan Permohonan". File biner / lampiran dioper ke `ProjectController@store`.
-   *   **Background Worker (Queue)**: Di titik inilah `ProcessDocumentUploadJob.php` bekerja. Daripada membekukan layar Chrome, fungsi *Background Queue* secara asinkron menyedot file tersebut, menggesernya ke Storage Publik, lalu mencetak baris ke tabel struktur database `documents`. 
-3. **Fase Evaluasi (Penilaian Penilai)**
-   *   **Alur**: Proyek *(Model Project)* berganti wajah dari `draft` menjadi `submitted`. Sang Verifikator *(PenilaiDashboard.vue)* meraup data tersebut dengan mengklik fitur "Ambil Tugas".
-   *   **Logic**: Vue menyambung pada rel `AssessmentLogController@evaluate`. Auditor menyuntikkan komentar. Jika ia menekan `Disetujui`, siklus terkunci permanen (*approved*). Jika `Revisi`/`Ditolak`, Pemohon mendapat peringatan perbaikan file.
-4. **Tahap Akhir (Puncak Analitik & Database)**
-   *   Data bermuara di tabel `projects` dan melahirkan serpihan jejak audit di `project_status_histories` (Untuk fitur pencatatan *Timeline Trail*).
-   *   **Stats API**: Dasbor Utama menghitung rasio dokumen *(Approved vs Rejected)* pada Controller `DashboardController.php`. Disinilah fitur pamungkas **Laravel Cache** diinjeksikan agar PostgreSQL tidak kelelahan akibat serangan permintaan agregasi jumlah dokumen gila-gilaan. Memori Cache ini kemudian ditarik oleh visualiasi **ApexCharts** Vue.js di sisi Admin & Penilai!
+## 1. Arsitektur Keseluruhan (SPA + API)
 
-## 3. Direktori Controller, Model, & Data Yang Disimpan
-Rangkuman pilar struktur Back-End:
-*   `ProjectController.php`: Jantung Utama. Mengatur CRUD pengajuan dokumen. Menjalankan *Request Validasi*: wajib format mimes (*.pdf, .docx, .png*) dengan ukuran maksimal **20MB**.
-*   `DashboardController.php`: Pabrik intelijen kecepatan tinggi. Menggunakan `Cache::remember()` meramu metrik SLA review auditor dan status berkas.
-*   `ExportController.php`: Modul canggih yang merubah kumpulan data dari kueri Model `Project` menjadi murni file rekap `Laporan_SIPEDO.xlsx` & cetakan arisan murni `PDF`.
-*   `ProcessDocumentUploadJob.php` (Job / Worker): Mengolah lalu-lintas jaringan pemindahan beban file pada disk dari folder `/temp` menuju `/public` melalui antrean asinkron (*Queue Table*) murni bawaan Laravel.
+SIPEDO menggunakan struktur moduler berbasis *RESTful API*:
+- **Aktor Frontend:** Bertanggung jawab penuh melukiskan DOM (tampilan tabel, peringatan, kotak pengajuan). Seluruh komunikasi di dalam Vue dikelola oleh *Axios*, yang menyematkan `Bearer Token` atau `Sanctum Cookie` secara senyap (*interceptors*) pada semua rute, terpusat di `main.js`.
+- **Nginx Reverse Proxy:** Mencegat alamat di port `8094`. Apabila alamat yang diminta diawali `/api` atau `/sanctum`, Nginx meneruskannya ke mesin PHP-FPM (Container Laravel `sipedo_app` port 9000). Jika tidak, Nginx memberikan file Vue (`index.html`).
+- **Aktor Backend:** Laravel mengesampingkan pembuatan antarmuka (tidak ada view Blade yang signifikan). Fokus menerima paket JSON, melakukan *Database Query* via Eloquent ORM, dan membungkus hasil respons (*Response JSON*). 
 
-Tabel Basis Data Paling Krusial: `users`, `document_types` (Master admin), `projects` (Data borang utama), `documents` (Tabel fisik lokasi file), `project_status_histories` (Jejak riwayat alur hidup file).
+---
 
+## 2. Alur Autentikasi (Login & Sesi)
+**Tujuan Berkas:** Mengamankan setiap jalan masuk aplikasi dari penyusup, serta mengenali level (*Role*) secara ketat.
 
+* **Frontend:** `LoginView.vue`
+* **Router API:** `routes/api.php`
+* **Controller:** `app/Http/Controllers/AuthController.php`
+
+**Kronologi Kerja:**
+1. Pengguna memasukkan sandi di *browser*. 
+2. Vue diam-diam mengontak `/sanctum/csrf-cookie` untuk mengambil jaminan anti-pembajakan formulir, dilanjut dengan request `POST /api/login`.
+3. Di `AuthController::login`, metode `Auth::attempt()` melakukan pencarian ganda (Apakah email ada di tabel `users`? Apakah `Hash` sandi sama?).
+4. Jika berpapasan (*Match*), Sanctum meredam Token Privat lewat `$user->createToken('auth_token')->plainTextToken`.
+5. JSON respons (Token & Profil Identitas) dilempar ke Vue ➔  Disimpan di `localStorage` ➔ Vue Router segera mem-`push` ke URL `/pemohon/dashboard` (atau peran terkait).
+
+---
+
+## 3. Alur Utama Pemohon: Pengajuan Proyek
+**Tujuan Berkas:** Mewadahi Pemohon (*Applicant*) untuk membuat pengajuan berkas baru, mengirim dokumen lampiran kelayakan.
+
+* **Frontend:** Component `PemohonDashboard.vue`, Formulir Unggah.
+* **Controller Inti:** `app/Http/Controllers/ProjectController.php`
+* **Kaitan Model:** `Project`, `Document`, `User`
+
+**Kronologi Kerja (Skenario Submit Pengajuan):**
+1. Pemohon mengisi detail proyek dan dokumen di antarmuka Vue ➔ Menekan *Submit*.
+2. Vue menggunakan `FormData` JavaScript untuk menempelkan teks sekaligus File yang diunggah ➔ Dikirim ke `POST /api/projects`.
+3. Di dalam ruang mesin Laravel, `ProjectController::store` dipanggil.
+4. **Validasi (Proteksi Awal):** Laravel secara ketat memeriksa tipe berkas, ukuran unggahan, kelengkapan format.
+5. **Transaksi Basis Data:** `DB::beginTransaction()` mendikte agar seluruh pencatatan harus mulus; jika ada error unggah file, SQL tidak akan merekam data setengah matang.
+6. Laravel membuat baris di tabel `projects`. 
+7. Sistem file (`Storage::disk('local/s3')`) mengamankan fail, dan merekam rutenya ke dalam tabel `documents` menggunakan perulangan *(foreach)*.
+8. Status default `"draft"` atau `"in_review"` tersemat. Hasil sukses dilempar lagi ke layar pemohon sebagai *SweetAlert/Toaster*.
+
+*(Terdapat juga fungsi lain seperti `history`, `trash`, dan `restore` untuk memanajemen arsip lama).*
+
+---
+
+## 4. Alur Penilai: Evaluasi & Log Penilaian
+**Tujuan Berkas:** Mengaudisi kelayakan dokumen yang dilempar pemohon, lalu menerima/menolak seutuhnya yang dikawal riwayat transparan (Audit Trail).
+
+* **Frontend:** `PenilaiDashboard.vue` dan Detail Evaluasi.
+* **Controller Inti:** `app/Http/Controllers/AssessmentLogController.php`
+* **Kaitan Model:** `AssessmentLog`, `Project`
+
+**Kronologi Kerja:**
+1. Rute *Penilai* memblokir siapa saja di luar `role===penilai` sejak di penjaga pintu (`Auth::user()->role !== 'penilai'`).
+2. Penilai mengeklik "Buat Evaluasi". Mengirim `status` dan `notes` ke `POST /api/assessments/{project}/evaluate`.
+3. Di dalam `AssessmentLogController`, blok validasi wajib menyuruh *Reviewer* menyertakan 'Catatan' manakala ia memilih menjatuhkan status 'Revisi' atau 'Ditolak'.
+4. Menggunakan `DB::beginTransaction()`, 2 proses sakral bersentuhan dengan database:
+   - Data baris dari tabel `projects` ditimpa status barunya (`revision_count` bertambah jika revisi).
+   - Tabel `assessment_logs` dibuat persis menyalin detik kejatuhan palu tersebut, lengkap dengan `ip_address` evaluator dan `status_from` ke `status_to`, merekam jejak siapa yang menyetujuinya.
+
+---
+
+## 5. Alur Admin: Manajemen Pengguna & Referensi (Document Types)
+**Tujuan Berkas:** "Ruang mesin" pengelola untuk melakukan pendaftaran aktor sistem dan kriteria kategori lampiran. 
+
+* **Frontend:** `AdminDashboard.vue` dan menu-menu Manajer.
+* **Controller Inti:** `app/Http/Controllers/Admin/UserController.php`, `DocumentTypeController.php`
+
+**Kronologi Kerja:**
+1. Akun Admin terpusat pada Route Group dengan `prefix('admin')` pada `api.php`.
+2. Admin dapat mengubah *Role* Pemohon (memulihkan, membekukan menggunakan *soft-deletes* / `toggleStatus`).
+3. Pada `DocumentTypeController`, tabel `document_types` dikelola (CRUD). Admin secara berkala mendefinisikan apa saja dokumen pengajuan yang sah. 
+
+---
+
+## 6. Alur Dashboard, Statistik, & Notifikasi
+**Tujuan Berkas:** Fitur asisten kosmetik untuk pengalaman pengguna, pelunasan notifikasi lonceng & hitungan grafik.
+
+* **Controller Inti:** `DashboardController.php`, `NotificationController.php`
+
+**Kronologi Kerja:**
+1. Di setiap layar masuk utama Vue mengontak `GET /api/dashboard/stats`.
+2. `DashboardController` menjalankan `COUNT()` pada Model, menghitung rasio jumlah dokumen diproses, tertunda, ditolak, dsb. Disajikan dalam sekali napas (*Batch JSON*) agar Grafik chart.js atau ApexCharts bisa melukisnya serempak.
+3. Saat *Penilai* mengubah status, sistem (*Observer* atau langsung via Controller) memantik rekaman ke tabel notifikasi bersangkutan (Bagi pemohon X: *"Dokumen Anda ditolak!"*).
+4. `NotificationController` menangani indikator "*Unread Badge*" dengan aksi `markAsRead` ketika si pengguna Vue membuka layarnya.
+
+---
+
+## 7. Alur Pelaporan & Ekspor Data
+**Tujuan Berkas:** Mencetak rekap evaluasi secara terhitung massal dari *Query SQL* padat.
+
+* **Controller Inti:** `ExportController.php`
+
+**Kronologi Kerja:**
+1. Vue melayangkan permintaan (biasanya dengan token akses, atau khusus disiapkan sebagai publik khusus pada demo).
+2. Membidik `GET /api/export/excel` atau `pdf`.
+3. Eloquent merakit Eager Loading bertumpuk lalu mengumpankannya ke antarmuka ekstensi Laravel Excel/DomPDF. 
+4. Merespon aliran *(Stream)* data berkas biner `.xlsx`/ `.pdf` ke peramban (*browser*) agar segera diproses dialog kotak "Save As...".
+
+---
+
+**(Penutup Cepat):** Seluruh komunikasi dari nomor 1 sampai 7 berjalan amat steril, karena jika terjadi Error 500 (*Exception*) di backend `try-catch`, sistem ORM akan merobohkan perubahan via `DB::rollBack()` dan mengembalikan format `{"message": "Error ..."}` yang elegan agar *Toast Notification* di Vue JS bisa memberi tahu pengguna tanpa membuat halamannya patah!
