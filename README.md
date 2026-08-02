@@ -1,107 +1,498 @@
 # 📄 SIPEDO (Sistem Informasi Persetujuan Dokumen)
 
-**SIPEDO Enterprise** adalah sebuah sistem berbasis *web application* berskala besar yang dikembangkan untuk mendukung instansi pemerintah atau korporat dalam mengelola alur pendaftaran, verifikasi, dan penyetujuan/penolakan kelayakan dokumen. 
+SIPEDO (Sistem Informasi Persetujuan Dokumen) adalah aplikasi berbasis web yang dikembangkan untuk membantu proses pengajuan, verifikasi, review, dan persetujuan dokumen pada instansi pemerintah maupun perusahaan.
 
-Sistem ini didesain khusus (Production-Ready) dengan performa tinggi untuk sanggup menangani jutaan baris data, dengan menitikberatkan pada perancangan **PostgreSQL Normalization**, **Server-Side Pagination**, serta keamanan mutlak melalui **Laravel Sanctum Authentication (UUID v4)**.
-
----
-
-## 🚀 Teknologi yang Digunakan (Tech Stack)
-
-### **Backend (REST API)**
-- **PHP** 8.2+
-- **Laravel Framework** 11.x
-- **PostgreSQL** (Relational & Normalized Database)
-- **Laravel Sanctum** (API Token Security)
-
-### **Frontend (Single Page Application)**
-- **Vue.js** 3 (Composition API)
-- **Vite** (Build Tool)
+Aplikasi ini dibangun menggunakan arsitektur **REST API** dengan **Laravel 11** sebagai Backend dan **Vue 3 (Composition API)** sebagai Frontend Single Page Application (SPA). Seluruh data disimpan menggunakan **PostgreSQL**, sedangkan autentikasi API menggunakan **Laravel Sanctum**.
 
 ---
 
-## ✨ Sorotan Fitur Utama & Kepatuhan Bobot Penilaian
-Sistem ini telah memborong daftar kewajiban *Technical Test* beserta **Nilai Bonus Tambahannya**:
-1. **Keamanan Ekstrem (Authentication)**: Menggunakan Laravel Sanctum dengan relasi *Polymorphic UUID v4* (Menghilangkan bahaya eksploitasi ID `1, 2, 3` yang dapat ditebak).
-2. **PostgreSQL Enterprise Architecture**: Tidak menggunakan tabel monolitik (bertumpuk). Menyediakan relasi anti-lemot dengan memisahkan arsip tabel: `project_status_histories`, `project_reviews`, `project_assignments`, dan `document_versions`!
-3. **Optimasi Performa Big Data (Pagination)**: Sistem tidak akan "*lag*" bila dimasukkan 1 Juta rekaman data karena Vue tidak merender manual, ia menggunakan *Server-Side Paginator* yang hanya menarik 10-15 baris / *Query Request*.
-4. **Validasi File Strict**: Batasan format (*MIMES: pdf, docx, zip*) dan ukuran (*Max 20MB*) dikawal ketat oleh *Laravel Request Validation*.
-5. **Business Rule (State Machine)**: Mencegah *bypass* alur. Dokumen `Approved` dan `Rejected` berstatus gembok absolut (*Lock Finality*).
+# 🚀 Technology Stack
+
+## Backend
+
+- PHP 8.3
+- Laravel Framework 11
+- PostgreSQL 15
+- Laravel Sanctum
+- REST API
+
+## Frontend
+
+- Vue.js 3
+- Composition API
+- Axios
+- Vite
+
+## Development Tools
+
+- Docker & Docker Compose
+- Git
+- Composer
+- NPM
 
 ---
 
-## ⚙️ Panduan Instalasi (Development Setup)
+# 🏗️ System Architecture
 
-### **Persyaratan Sistem Dasar**
-- **PHP** (Min. v8.2) & **Composer**
-- **Node.js** (Min. v18) & **NPM**
-- **PostgreSQL** Server ter-install dan berjalan.
+```
+Browser
+      │
+Vue 3 SPA
+      │
+Axios
+      │
+REST API
+      │
+Laravel 11
+      │
+Controller
+      │
+Model
+      │
+PostgreSQL
+```
 
-### **Tahapan Menjalankan Proyek (Localhost)**
+Frontend tidak pernah mengakses database secara langsung.
 
-1. **Clone Repositori Ini**
-   ```bash
-   git clone <URL-REPOSITORI-GITLAB-ANDA>
-   cd sipedo
-   ```
-
-2. **Instalasi Dependency Backend (Laravel)**
-   ```bash
-   composer install
-   ```
-
-3. **Konfigurasi Environment Database**
-   - Salin file `.env.example` ke `.env`.
-   ```bash
-   cp .env.example .env
-   ```
-   - Buka koneksi konfigurasi PostgreSQL di `.env` (Sesuaikan dengan *username* dan *password* DB lokal Anda):
-   ```env
-   DB_CONNECTION=pgsql
-   DB_HOST=127.0.0.1
-   DB_PORT=5432
-   DB_DATABASE=sipedo
-   DB_USERNAME=postgres
-   DB_PASSWORD=password_anda
-   ```
-
-4. **Generate Application Key & Sinkronisasi Database**
-   Jalankan pendaftaran Key, pembuatan seluruh tabel struktur relasi *(Migrate)*, hingga pemasukan pengguna awal uji coba *(Seeding)*.
-   ```bash
-   php artisan key:generate
-   php artisan migrate:fresh --seed
-   ```
-
-5. **Instalasi Dependency Frontend (Vue.js)**
-   ```bash
-   cd FrontEnd
-   npm install
-   ```
-
-6. **Menyalakan Server Aplikasi (Terminal Ganda)**
-   - Buka Terminal Pertama (Untuk Backend API):
-     ```bash
-     php artisan serve
-     ```
-   - Buka Terminal Kedua (Untuk Frontend SPA), usahakan tetap berada di *folder* `FrontEnd`:
-     ```bash
-     cd FrontEnd
-     npm run dev
-     ```
-
-7. Buka tautan lokal yang ditayangkan oleh layanan Vue Vite (Umunya `http://localhost:5173/`). Aplikasi siap digunakan!
+Seluruh komunikasi dilakukan melalui REST API menggunakan format JSON sehingga frontend dan backend dapat dikembangkan secara terpisah.
 
 ---
 
-## 🔑 Hak Akses Pengujian (*Dummy Accounts*)
-Berkat proses `migrate:fresh --seed` di atas, sistem telah menciptakan akun buatan (*Dummy*) agar Tim Rekrutmen bisa menguji langsung peran-perannya:
+# ✨ Fitur Utama
 
-- **Akses Administrator** 
-  Email: `admin@example.com` | Password: `password`
-- **Akses Pemohon Dokumen** 
-  Email: `pemohon@example.com` | Password: `password`
-- **Akses Penguji (Verifikator)** 
-  Email: `penilai@example.com` | Password: `password`
+## Authentication
+
+- Login menggunakan Laravel Sanctum
+- Bearer Token Authentication
+- Role Based Access
+- UUID sebagai Primary Key
 
 ---
-*Dibuat murni sebagai Hak Cipta Karya Penyelesaian Uji Kompetensi Full-Stack Developer.*
+
+## Dashboard
+
+- Dashboard Admin
+- Dashboard Pemohon
+- Dashboard Penilai
+- Statistik Data
+- Monitoring Status Dokumen
+
+---
+
+## Manajemen Project
+
+- CRUD Project
+- Upload Multi Dokumen
+- Submit Project
+- History Status
+- Recycle Bin
+- Restore Data
+
+---
+
+## Review Dokumen
+
+- Assign Penilai
+- Approve
+- Reject
+- Revision
+- Assessment History
+
+---
+
+## Master Data
+
+- Master User
+- Master Jenis Dokumen
+
+---
+
+# ⚡ Implementasi Requirement Technical Test
+
+Aplikasi ini mengimplementasikan seluruh kebutuhan utama Technical Test.
+
+| Feature | Status |
+|---------|:------:|
+| Laravel 11 | ✅ |
+| PHP 8.2+ | ✅ |
+| Vue 3 | ✅ |
+| PostgreSQL | ✅ |
+| REST API | ✅ |
+| Git | ✅ |
+| Sanctum Authentication | ✅ |
+| Upload File Validation | ✅ |
+| Pagination | ✅ |
+| Queue Upload | ✅ |
+| Soft Delete | ✅ |
+| UUID | ✅ |
+| Docker | ✅ |
+| Export Excel | ✅ |
+| Export PDF | ✅ |
+
+---
+
+# 🔐 Authentication
+
+Authentication menggunakan Laravel Sanctum.
+
+Setelah user berhasil login, sistem akan menghasilkan API Token.
+
+Seluruh endpoint yang bersifat private dilindungi menggunakan middleware.
+
+```php
+Route::middleware('auth:sanctum')
+```
+
+Token harus dikirim melalui Authorization Header.
+
+```
+Authorization: Bearer {token}
+```
+
+---
+
+# 📂 Database Design
+
+Database menggunakan PostgreSQL.
+
+Struktur utama terdiri dari beberapa tabel yang telah dinormalisasi.
+
+```
+users
+    │
+    └── projects
+            │
+            ├── documents
+            │
+            ├── assessment_logs
+            │
+            ├── project_status_histories
+            │
+            └── project_assignments
+
+document_types
+```
+
+Relasi utama:
+
+- Satu User memiliki banyak Project
+- Satu Project memiliki banyak Document
+- Satu Project memiliki banyak Assessment Log
+- Satu Project memiliki banyak Status History
+
+Dengan struktur ini data menjadi lebih terorganisir dan mengurangi duplikasi data.
+
+---
+
+# ⚙️ Optimasi Performa
+
+Aplikasi menerapkan beberapa optimasi performa.
+
+## Server Side Pagination
+
+```php
+Project::latest()->paginate(10);
+```
+
+Pagination dilakukan di server sehingga frontend hanya menerima data yang dibutuhkan.
+
+---
+
+## Eager Loading
+
+```php
+Project::with('documents');
+```
+
+Digunakan untuk menghindari N+1 Query sehingga jumlah query database menjadi lebih efisien.
+
+---
+
+## Database Transaction
+
+```php
+DB::beginTransaction();
+```
+
+Digunakan agar proses penyimpanan Project dan Upload Dokumen tetap konsisten.
+
+Jika terjadi error maka seluruh proses akan dibatalkan menggunakan rollback.
+
+---
+
+## Queue
+
+```php
+ProcessDocumentUploadJob::dispatch(...)
+```
+
+Upload dokumen diproses di background menggunakan Queue sehingga response API tetap cepat.
+
+---
+
+## Soft Delete
+
+```php
+use SoftDeletes;
+```
+
+Data tidak langsung dihapus dari database tetapi dipindahkan ke Recycle Bin sehingga dapat dipulihkan kembali.
+
+---
+
+# 📁 Upload Dokumen
+
+Validasi file dilakukan menggunakan Laravel Validation.
+
+Format file:
+
+- PDF
+- DOC
+- DOCX
+- ZIP
+- RAR
+- JPG
+- PNG
+
+Ukuran maksimal:
+
+```
+20 MB
+```
+
+Hal ini bertujuan menjaga keamanan dan konsistensi data.
+
+---
+
+# 📦 REST API
+
+Contoh endpoint yang tersedia.
+
+## Authentication
+
+```
+POST    /api/login
+POST    /api/logout
+GET     /api/profile
+```
+
+## Project
+
+```
+GET     /api/projects
+POST    /api/projects
+POST    /api/projects/{id}
+DELETE  /api/projects/{id}
+POST    /api/projects/{id}/submit
+GET     /api/projects/{id}/history
+POST    /api/projects/{id}/restore
+```
+
+## Assessment
+
+```
+GET     /api/assessments
+POST    /api/assessments/{project}/evaluate
+```
+
+## Admin
+
+```
+GET     /api/admin/users
+POST    /api/admin/users
+PUT     /api/admin/users/{id}
+DELETE  /api/admin/users/{id}
+```
+
+---
+
+# 🐳 Docker
+
+Project dapat dijalankan menggunakan Docker Compose.
+
+Menjalankan seluruh service.
+
+```bash
+docker compose up -d --build
+```
+
+Menjalankan migration.
+
+```bash
+docker exec -it sipedo_app php artisan migrate --seed
+```
+
+Service yang digunakan:
+
+- Laravel App
+- Nginx
+- PostgreSQL
+- PgAdmin
+
+Arsitektur Docker.
+
+```
+Browser
+      │
+Nginx
+      │
+Laravel
+      │
+PostgreSQL
+```
+
+---
+
+# ⚙️ Installation
+
+Clone repository.
+
+```bash
+git clone <repository-url>
+```
+
+Masuk ke project.
+
+```bash
+cd sipedo
+```
+
+Install dependency backend.
+
+```bash
+composer install
+```
+
+Copy environment.
+
+```bash
+cp .env.example .env
+```
+
+Generate key.
+
+```bash
+php artisan key:generate
+```
+
+Migration.
+
+```bash
+php artisan migrate --seed
+```
+
+Install frontend.
+
+```bash
+cd FrontEnd
+npm install
+```
+
+Menjalankan frontend.
+
+```bash
+npm run dev
+```
+
+Backend.
+
+```bash
+php artisan serve
+```
+
+---
+
+# 👤 Dummy Account
+
+## Administrator
+
+```
+Email
+admin@example.com
+
+Password
+password
+```
+
+---
+
+## Pemohon
+
+```
+Email
+pemohon@example.com
+
+Password
+password
+```
+
+---
+
+## Penilai
+
+```
+Email
+penilai@example.com
+
+Password
+password
+```
+
+---
+
+# 📁 Struktur Project
+
+```
+app/
+├── Http/
+├── Models/
+├── Jobs/
+├── Notifications/
+
+database/
+├── migrations/
+├── seeders/
+
+routes/
+├── api.php
+
+resources/
+
+FrontEnd/
+├── src/
+├── components/
+├── views/
+
+docker/
+├── nginx/
+
+docker-compose.yml
+```
+
+---
+
+# 📚 Catatan
+
+Selama pengembangan aplikasi ini diterapkan beberapa best practice Laravel, di antaranya:
+
+- REST API Architecture
+- Laravel Sanctum Authentication
+- UUID Primary Key
+- Server Side Pagination
+- Eager Loading
+- Database Transaction
+- Queue Background Job
+- Soft Delete
+- File Validation
+- Role Based Access Control
+- Docker Environment
+
+---
+
+# 👨‍💻 Developer
+
+**Hafis Ardiyanto**
+
+Technical Test – Full Stack Developer
+
+Laravel 11 • Vue 3 • PostgreSQL • REST API • Docker
