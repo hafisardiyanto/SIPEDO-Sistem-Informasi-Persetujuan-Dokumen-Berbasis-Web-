@@ -55,6 +55,18 @@ services:
     networks:
       - sipedo_network
 
+  worker:
+    image: localhost/sipedo_app:latest
+    container_name: sipedo_worker
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3
+    volumes:
+      - ./:/var/www
+    networks:
+      - sipedo_network
+    depends_on:
+      - db
+
 networks:
   sipedo_network:
     driver: bridge
